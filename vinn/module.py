@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.functional import softplus
-from .distributions import Normal
+# from .distributions import Normal
+from torch.distributions.normal import Normal
 
 class VIModule(nn.Module):
 
