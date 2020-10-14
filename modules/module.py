@@ -47,7 +47,7 @@ class VIModule(nn.Module):
         s = "weight: {}, bias: {}".format(list(self.weight_loc.size()), list(self.bias_loc.size()))
         return s
 
-class ReparameterizationLayer(VIModule):
+class RTLayer(VIModule):
 
     def __init__(self,
                  weight_posterior,
@@ -71,7 +71,7 @@ class ReparameterizationLayer(VIModule):
             return self.layer_fn(input, self.rsample(self.weight_loc, softplus(self.weight_ro)), **self.kwargs)
         return self.layer_fn(input, self.rsample(self.weight_loc, softplus(self.weight_ro)), self.rsample(self.bias_loc, softplus(self.bias_ro)), **self.kwargs)
 
-class LocalReparameterizationLayer(VIModule):
+class LRTLayer(VIModule):
 
     def __init__(self,
                  weight_posterior,

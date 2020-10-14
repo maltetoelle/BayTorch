@@ -1,11 +1,11 @@
-import torch.nn.functional as F
+LRTimport torch.nn.functional as F
 from torch.distributions.kl import kl_divergence
 
-from .module import ReparameterizationLayer, LocalReparameterizationLayer
+from .module import RTLayer, LRTLayer
 from .utils import mean_field_normal_initializer, default_prior, mc_kl_divergence, scale_mixture_prior #, kl_divergence
 from torch.nn.modules.utils import _pair
 
-class LinearReparameterization(ReparameterizationLayer):
+class LinearRT(RTLayer):
 
     def __init__(self,
                  in_features,
@@ -23,7 +23,7 @@ class LinearReparameterization(ReparameterizationLayer):
             kl_divergence_fn = kl_divergence
 
         if bias:
-            super(LinearReparameterization, self).__init__(
+            super(LinearRT, self).__init__(
                 weight_posterior=mean_field_normal_initializer((out_features, in_features), posterior["loc"], posterior["ro"]),
                 weight_prior=prior,
                 bias_posterior=mean_field_normal_initializer(out_features, posterior["loc"], posterior["ro"]),
@@ -31,7 +31,7 @@ class LinearReparameterization(ReparameterizationLayer):
                 kl_divergence_fn=kl_divergence_fn,
                 layer_fn=F.linear)
         else:
-            super(LinearReparameterization, self).__init__(
+            super(LinearRT, self).__init__(
                 weight_posterior=mean_field_normal_initializer((out_features, in_features), posterior["loc"], posterior["ro"]),
                 weight_prior=prior,
                 bias_posterior=None,
@@ -39,7 +39,7 @@ class LinearReparameterization(ReparameterizationLayer):
                 kl_divergence_fn=kl_divergence_fn,
                 layer_fn=F.linear)
 
-class Conv2DReparameterization(ReparameterizationLayer):
+class Conv2dRT(RTLayer):
 
     def __init__(self,
                  in_channels,
@@ -64,31 +64,31 @@ class Conv2DReparameterization(ReparameterizationLayer):
             kl_divergence_fn = kl_divergence
 
         if bias:
-            super(Conv2DReparameterization, self).__init__(
+            super(Conv2dRT, self).__init__(
                 weight_posterior=mean_field_normal_initializer((out_channels, in_channels // groups, kernel_size[0], kernel_size[1]), posterior["loc"], posterior["ro"]),
                 weight_prior=prior,
                 bias_posterior=mean_field_normal_initializer(out_channels, posterior["loc"], posterior["ro"]),
                 bias_prior=prior,
                 kl_divergence_fn=kl_divergence_fn,
-                layer_fn=F.conv2d,
+                layer_fn=F.Conv2d,
                 stride=stride,
                 padding=padding,
                 dilation=dilation,
                 groups=groups)
         else:
-            super(Conv2DReparameterization, self).__init__(
+            super(Conv2dRT, self).__init__(
                 weight_posterior=mean_field_normal_initializer((out_channels, in_channels // groups, kernel_size[0], kernel_size[1]), posterior["loc"], posterior["ro"]),
                 weight_prior=prior,
                 bias_posterior=None,
                 bias_prior=None,
                 kl_divergence_fn=kl_divergence_fn,
-                layer_fn=F.conv2d,
+                layer_fn=F.Conv2d,
                 stride=stride,
                 padding=padding,
                 dilation=dilation,
                 groups=groups)
 
-class LinearLocalReparameterization(LocalReparameterizationLayer):
+class LinearLRT(LRTLayer):
 
     def __init__(self,
                  in_features,
@@ -106,7 +106,7 @@ class LinearLocalReparameterization(LocalReparameterizationLayer):
             kl_divergence_fn = kl_divergence
 
         if bias:
-            super(LinearLocalReparameterization, self).__init__(
+            super(LinearLRT, self).__init__(
                 weight_posterior=mean_field_normal_initializer((out_features, in_features), posterior["loc"], posterior["ro"]),
                 weight_prior=prior,
                 bias_posterior=mean_field_normal_initializer(out_features, posterior["loc"], posterior["ro"]),
@@ -114,7 +114,7 @@ class LinearLocalReparameterization(LocalReparameterizationLayer):
                 kl_divergence_fn=kl_divergence_fn,
                 layer_fn=F.linear)
         else:
-            super(LinearLocalReparameterization, self).__init__(
+            super(LinearLRT, self).__init__(
                 weight_posterior=mean_field_normal_initializer((out_features, in_features), posterior["loc"], posterior["ro"]),
                 weight_prior=prior,
                 bias_posterior=None,
@@ -122,7 +122,7 @@ class LinearLocalReparameterization(LocalReparameterizationLayer):
                 kl_divergence_fn=kl_divergence_fn,
                 layer_fn=F.linear)
 
-class Conv2DLocalReparameterization(LocalReparameterizationLayer):
+class Conv2dLRT(LRTLayer):
 
     def __init__(self,
                  in_channels,
@@ -146,25 +146,25 @@ class Conv2DLocalReparameterization(LocalReparameterizationLayer):
             kl_divergence_fn = kl_divergence
 
         if bias:
-            super(Conv2DLocalReparameterization, self).__init__(
+            super(Conv2dLRT, self).__init__(
                 weight_posterior=mean_field_normal_initializer((out_channels, in_channels // groups, kernel_size[0], kernel_size[1]), posterior["loc"], posterior["ro"]),
                 weight_prior=prior,
                 bias_posterior=mean_field_normal_initializer(out_channels, posterior["loc"], posterior["ro"]),
                 bias_prior=prior,
                 kl_divergence_fn=kl_divergence_fn,
-                layer_fn=F.conv2d,
+                layer_fn=F.Conv2d,
                 stride=stride,
                 padding=padding,
                 dilation=dilation,
                 groups=groups)
         else:
-            super(Conv2DLocalReparameterization, self).__init__(
+            super(Conv2dLRT, self).__init__(
                 weight_posterior=mean_field_normal_initializer((out_channels, in_channels // groups, kernel_size[0], kernel_size[1]), posterior["loc"], posterior["ro"]),
                 weight_prior=prior,
                 bias_posterior=None,
                 bias_prior=None,
                 kl_divergence_fn=kl_divergence_fn,
-                layer_fn=F.conv2d,
+                layer_fn=F.Conv2d,
                 stride=stride,
                 padding=padding,
                 dilation=dilation,

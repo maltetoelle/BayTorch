@@ -4,7 +4,7 @@ import sys
 import time
 from torch.nn import Parameter
 from torch.distributions.normal import Normal
-from .distributions import MixtureNormal #, Normal
+from .distributions import MixtureNormal
 
 def normal_initializer(size, mean=0.0, std=0.1):
     return Parameter(torch.normal(mean=mean*torch.ones(size), std=std))
@@ -26,8 +26,3 @@ def mc_kl_divergence(p, q, n_samples=1):
         sample = p.rsample()
         kl += p.log_prob(sample) - q.log_prob(sample)
     return kl / n_samples
-
-def kl_divergence(p, q):
-    var_ratio = (p.scale / q.scale.to(p.loc.device)).pow(2)
-    t1 = ((p.loc - q.loc.to(p.loc.device)) / q.scale.to(p.loc.device)).pow(2)
-    return 0.5 * (var_ratio + t1 - 1 - var_ratio.log())
