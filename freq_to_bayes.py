@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .modules.layers import *
+from .modules.bbb_layers import Conv2dLRT as BBBConv2d
 
 class MeanFieldVI(nn.Module):
 
@@ -11,8 +12,8 @@ class MeanFieldVI(nn.Module):
         self.net = net
 
         if reparam == 'local':
-            # self._conv2d = BBBConv2d
-            self._conv2d = Conv2dLRT
+            self._conv2d = BBBConv2d
+            # self._conv2d = Conv2dLRT
             self._linear = LinearLRT
         else:
             self._conv2d = Conv2dRT
@@ -88,9 +89,12 @@ class MCDropoutVI(nn.Module):
                 elif len(layer._modules):
                     self._make_last_layer_deterministic(layer)
 
+    ##############################################
+    # only for dip -> has to be moved
     def _dip_make_output_deterministic(self, module):
         for i, (key, layer) in enumerate(module._modules.items()):
             if type(layer) == nn.Sequential:
                 for name, m in layer._modules.items():
                     if type(m) == MCDropout:
                         layer._modules[name] = m.layer
+    ##############################################
