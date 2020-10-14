@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.nn.functional import softplus
-# from .distributions import Normal
 from torch.distributions.normal import Normal
 
 class VIModule(nn.Module):
@@ -58,7 +56,7 @@ class RTLayer(VIModule):
                  layer_fn,
                  **kwargs):
 
-        super(ReparameterizationLayer, self).__init__(weight_posterior,
+        super(RTLayer, self).__init__(weight_posterior,
                                                       weight_prior,
                                                       bias_posterior,
                                                       bias_prior,
@@ -67,9 +65,8 @@ class RTLayer(VIModule):
         self.kwargs = kwargs
 
     def forward(self, input):
-        if self.bias_loc is None:
-            return self.layer_fn(input, self.rsample(self.weight_loc, softplus(self.weight_ro)), **self.kwargs)
-        return self.layer_fn(input, self.rsample(self.weight_loc, softplus(self.weight_ro)), self.rsample(self.bias_loc, softplus(self.bias_ro)), **self.kwargs)
+        bias_sample = self.rsample(self.bias_loc, softplus(self.bias_ro)) if self.bias_loc is not None else None
+        return self.layer_fn(input, self.rsample(self.weight_loc, softplus(self.weight_ro)), bias_sample, **self.kwargs)
 
 class LRTLayer(VIModule):
 
@@ -82,7 +79,7 @@ class LRTLayer(VIModule):
                  layer_fn,
                  **kwargs):
 
-        super(LocalReparameterizationLayer, self).__init__(weight_posterior,
+        super(LRTLayer, self).__init__(weight_posterior,
                                                            weight_prior,
                                                            bias_posterior,
                                                            bias_prior,
@@ -91,10 +88,7 @@ class LRTLayer(VIModule):
         self.kwargs = kwargs
 
     def forward(self, input):
-        if self.bias_loc is None:
-            output_loc = self.layer_fn(input, self.weight_loc, **self.kwargs)
-            output_scale = torch.sqrt(1e-9 + self.layer_fn(input.pow(2), softplus(self.weight_ro)**2, **self.kwargs))
-            return self.rsample(output_loc, output_scale)
+        bias_var = softplus(self.bias_ro)**2 if self.bias_loc is not None else None
         output_loc = self.layer_fn(input, self.weight_loc, self.bias_loc, **self.kwargs)
-        output_scale = torch.sqrt(1e-9 + self.layer_fn(input.pow(2), softplus(self.weight_ro)**2, softplus(self.bias_ro)**2, **self.kwargs))
+        output_scale = torch.sqrt(1e-9 + self.layer_fn(input.pow(2), softplus(self.weight_ro)**2, bias_var, **self.kwargs))
         return self.rsample(output_loc, output_scale)

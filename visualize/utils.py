@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..layers import Conv2dRT, Conv2dLRT, LinearRT, LinearLRT
+from ..modules import Conv2dRT, Conv2dLRT, LinearRT, LinearLRT
 
 def get_params(net):
     _net = copy.deepcopy(net)

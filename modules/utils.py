@@ -4,7 +4,7 @@ import sys
 import time
 from torch.nn import Parameter
 from torch.distributions.normal import Normal
-from .distributions import MixtureNormal
+from ..distributions import MixtureNormal
 
 def normal_initializer(size, mean=0.0, std=0.1):
     return Parameter(torch.normal(mean=mean*torch.ones(size), std=std))
@@ -19,10 +19,3 @@ def scale_mixture_prior(scale=[10, 0.01], pi=[.5, .5]):
     return MixtureNormal(loc=Parameter(torch.zeros(len(scale)), requires_grad=False),
                          scale=Parameter(torch.tensor(scale), requires_grad=False),
                          pi=Parameter(torch.tensor(pi), requires_grad=False))
-
-def mc_kl_divergence(p, q, n_samples=1):
-    kl = 0
-    for _ in range(n_samples):
-        sample = p.rsample()
-        kl += p.log_prob(sample) - q.log_prob(sample)
-    return kl / n_samples

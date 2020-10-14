@@ -2,7 +2,8 @@ import torch.nn.functional as F
 from torch.distributions.kl import kl_divergence
 
 from .module import RTLayer, LRTLayer
-from .utils import mean_field_normal_initializer, default_prior, mc_kl_divergence, scale_mixture_prior #, kl_divergence
+from .utils import mean_field_normal_initializer, default_prior, scale_mixture_prior
+from ..distributions import mc_kl_divergence
 from torch.nn.modules.utils import _pair
 
 class LinearRT(RTLayer):
@@ -72,7 +73,7 @@ class Conv2dRT(RTLayer):
             bias_posterior=bias_posterior,
             bias_prior=bias_prior,
             kl_divergence_fn=kl_divergence_fn,
-            layer_fn=F.Conv2d,
+            layer_fn=F.conv2d,
             stride=stride,
             padding=padding,
             dilation=dilation,
@@ -145,7 +146,7 @@ class Conv2dLRT(LRTLayer):
             bias_posterior=bias_posterior,
             bias_prior=bias_prior,
             kl_divergence_fn=kl_divergence_fn,
-            layer_fn=F.Conv2d,
+            layer_fn=F.conv2d,
             stride=stride,
             padding=padding,
             dilation=dilation,
