@@ -3,7 +3,8 @@ import numpy as np
 import sys
 import time
 from torch.nn import Parameter
-from .distributions import Normal, MixtureNormal
+from torch.distributions.normal import Normal
+from .distributions import MixtureNormal #, Normal
 
 def normal_initializer(size, mean=0.0, std=0.1):
     return Parameter(torch.normal(mean=mean*torch.ones(size), std=std))
