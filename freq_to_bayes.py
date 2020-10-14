@@ -31,10 +31,7 @@ class MeanFieldVI(nn.Module):
         kl = 0
         for layer in self.modules():
             if hasattr(layer, '_kl'):
-                try:
-                    kl += layer._kl
-                except:
-                    import pdb; pdb.set_trace()
+                kl += layer._kl
         return kl
 
     def _replace_deterministic_modules(self, module, prior_scale, prior_pi):
