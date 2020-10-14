@@ -33,7 +33,10 @@ class VIModule(nn.Module):
 
     @property
     def _kl(self):
-        kl = torch.sum(self.kl_divergence(Normal(self.weight_loc, softplus(self.weight_ro)), self.weight_prior))
+        try:
+            kl = torch.sum(self.kl_divergence(Normal(self.weight_loc, softplus(self.weight_ro)), self.weight_prior))
+        except:
+            import pdb; pdb.set_trace()
         if self.bias_loc is not None:
             kl += torch.sum(self.kl_divergence(Normal(self.bias_loc, softplus(self.bias_ro)), self.bias_prior))
         return kl
