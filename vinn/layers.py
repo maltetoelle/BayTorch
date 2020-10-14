@@ -1,7 +1,8 @@
 import torch.nn.functional as F
+from torch.distributions.kl import kl_divergence
 
 from .module import ReparameterizationLayer, LocalReparameterizationLayer
-from .utils import mean_field_normal_initializer, default_prior, kl_divergence, mc_kl_divergence, scale_mixture_prior
+from .utils import mean_field_normal_initializer, default_prior, mc_kl_divergence, scale_mixture_prior #, kl_divergence
 from torch.nn.modules.utils import _pair
 
 class LinearReparameterization(ReparameterizationLayer):
