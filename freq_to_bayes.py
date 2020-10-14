@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .layers import *
-from .vinn.layers import *
+from .modules.layers import *
 
 class MeanFieldVI(nn.Module):
 
