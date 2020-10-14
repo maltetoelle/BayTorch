@@ -1,4 +1,4 @@
-LRTimport torch.nn.functional as F
+import torch.nn.functional as F
 from torch.distributions.kl import kl_divergence
 
 from .module import RTLayer, LRTLayer
@@ -27,7 +27,7 @@ class LinearRT(RTLayer):
             bias_prior = prior
         else:
             bias_posterior, bias_prior = None, None
-            
+
         super(LinearRT, self).__init__(
             weight_posterior=mean_field_normal_initializer((out_features, in_features), posterior["loc"], posterior["ro"]),
             weight_prior=prior,
