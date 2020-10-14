@@ -1,8 +1,7 @@
 import torch.nn.functional as F
 
-from . import bnn as bnn
-from .bnn.module import ReparameterizationLayer, LocalReparameterizationLayer
-from .bnn.utils import mean_field_normal_initializer, default_prior, kl_divergence, mc_kl_divergence, scale_mixture_prior
+from .module import ReparameterizationLayer, LocalReparameterizationLayer
+from .utils import mean_field_normal_initializer, default_prior, kl_divergence, mc_kl_divergence, scale_mixture_prior
 from torch.nn.modules.utils import _pair
 
 class LinearReparameterization(ReparameterizationLayer):
