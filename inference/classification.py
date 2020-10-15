@@ -118,7 +118,7 @@ class ClassificationTrainer:
                 beta = get_beta(i, n_minibatches, beta_type, epoch, n_epochs, warmup_epochs)
                 kl *= beta
             else:
-                kl = torch.tensor([0])
+                kl = torch.tensor([0]).to(nll.device)
             ELBOloss = nll + kl
 
             optimizer.zero_grad()
