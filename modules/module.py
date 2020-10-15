@@ -14,13 +14,11 @@ class VIModule(Module):
                  bias_size=None,
                  prior=None,
                  posteriors=None,
-                 kl_type='reverse',
-                 **kwargs):
+                 kl_type='reverse'):
 
         super(VIModule, self).__init__()
 
         self.layer_fn = layer_fn
-        self.kwargs = kwargs
 
         if prior is None:
             prior = {'mu': 0, 'sigma': 0.1}

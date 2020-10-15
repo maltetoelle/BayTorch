@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .modules import Conv2dRT, Conv2dLRT, LinearRT, LinearLRT
+from .modules import Conv2dRT, Conv2dLRT, LinearRT, LinearLRT, MCDropout
 
 class MeanFieldVI(nn.Module):
 

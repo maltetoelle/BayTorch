@@ -1,55 +1,75 @@
-import torch
 import time
 import sys
+import os
+
+import torch
+import torch.nn.functional as F
+
 import numpy as np
 
-class ClassificationTrainer(object):
+from .utils import uncert_classification_kwon, get_beta
+
+# TODO: classification/regression difference mainly with accuracy
+class ClassificationTrainer:
     def __init__(self,
                 net,
                 train_loader,
                 val_loader=None,
-                device_ids=None):
+                net_path=None, # for further training!
+                gpu=1):
 
-        super(Trainer, self).__init__()
+        # super(Trainer, self).__init__()
 
-        self.device_ids = device_ids
-        use_cuda = torch.cuda.is_available() and len(self.device_ids) > 0
-        self.device = torch.device("cuda:{}".format(device_ids[0]) if use_cuda else "cpu")
-        if len(self.device_ids) > 1:
-            net = torch.nn.DataParallel(net, device_ids=device_ids)
-        self.net = net.to(self.device)
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
+        self.dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
+
+        self.net = net.type(self.dtype)
+
         self.train_loader = train_loader
         self.val_loader = val_loader
 
-    def train(self, n_epochs, criterion, optimizer, scheduler=None, verbosity=1,
-              opt_kwargs=dict(), crit_kwargs=dict(), sched_kwargs=dict()):
+    def train(self, n_epochs, criterion, net_path=None, scheduler=None,
+              show_every=1, opt_kwargs={'lr': 0.01, 'weight_decay': 1e-4},
+              sched_kwargs=dict()):
 
-        criterion = criterion(reduction='sum', **crit_kwargs)
-        optimizer = optimizer(filter(lambda p: p.requires_grad, self.net.parameters()), **opt_kwargs)
-        scheduler = scheduler(optimizer, **sched_kwargs)
+        optimizer = torch.optim.AdamW(self.net.parameters(), **opt_kwargs)
+        if net_path is not None:
+            train_data = torch.load(path)
+            self.net.load_state_dict(train_data['state_dict'])
+            optimizer.load_state_dict(train_data['optimizer'])
+
+        if criterion == 'nll':
+            criterion = F.nll_loss
+        elif criterion == 'cross_entropy':
+            criterion = F.cross_entropy
+
+        if scheduler is not None:
+            scheduler = scheduler(optimizer, **sched_kwargs)
 
         nll = []
         kl = []
         accuracy_train = []
-        accuracy_test = []
+        accuracy_val = []
 
         n_minibatches = np.ceil(float(len(self.train_loader.dataset)) / self.train_loader.batch_size)
-        beta = torch.tensor(1.0/(n_minibatches))
+        # need fct get_beta
+        # beta = torch.tensor(1.0/(n_minibatches))
 
         start = time.time()
         for epoch in range(n_epochs):
 
-            info_dict = self.train_epoch(criterion, optimizer, beta, epoch)
+            info_dict = self.train_epoch(criterion, optimizer, epoch, n_epochs, n_minibatches)
             if self.val_loader is not None:
                 accuracy = self.evaluate(self.val_loader)
-                accuracy_test.append(accuracy)
-            scheduler.step()
+                accuracy_val.append(accuracy)
+            if scheduler is not None:
+                scheduler.step()
 
             nll.append(info_dict["nll"])
             kl.append(info_dict["kl"])
             accuracy_train.append(info_dict["accuracy"])
 
-            if verbosity and (epoch+1) % verbosity == 0:
+            if (epoch+1) % show_every == 0:
                 if self.val_loader is not None:
                     print("#{:4d} | ELBO Loss: {:7.2f} | Accuracy: {:6.2f} % [{:6.2f} %] | KL: {:7.2f} | NLL: {:7.2f} |"\
                           .format(epoch+1, np.sum(info_dict["nll"]) + np.sum(info_dict["kl"]), info_dict["accuracy"], \
@@ -67,50 +87,47 @@ class ClassificationTrainer(object):
             'accuracy_test': accuracy_test,
             'nll': nll,
             'kl': kl,
-            'state_dict': self.net.module.state_dict() if len(self.device_ids) > 1 else self.net.state_dict(),
+            'state_dict': self.net.state_dict(),
             'optimizer': optimizer.state_dict(),
             'time': end,
         }
 
-    def train_epoch(self, criterion, optimizer, beta, epoch, warmup_epochs=0, n=1):
+    def train_epoch(self, criterion, optimizer, epoch, n_epochs, n_minibatches, beta_type='Standard', warmup_epochs=0, n=1):
         self.net.train()
-
-        if epoch < warmup_epochs:
-            beta /= warmup_epochs - epoch
 
         correct = 0
         kl_l = []
         nll_l = []
-        beta = beta.to(self.device)
 
         for i, (input, target) in enumerate(self.train_loader):
-            input = input.to(self.device)
-            target = target.to(self.device)
+            input = input.type(self.dtype)
+            target = target.type(self.dtype)
 
             # compute output
             if n == 1:
                 output = self.net(input)
             else:
-                output = torch.zeros((input.shape[0], self.net.n_outputs)).to(self.device)
+                output = torch.zeros((input.shape[0], self.net.n_outputs)).type(self.dtype)
                 for _ in range(n):
                     output += self.net(input)
                 output /= n
 
-            nll = criterion(output, target)
-            kl = self.net.module.kl.to(self.device) if len(self.device_ids) > 1 else self.net.kl.to(self.device)
-            kl *= beta
+            nll = criterion(output, target.long(), reduction='sum')
+            if hasattr(self.net, 'kl'):
+                kl = self.net.kl.type(self.dtype)
+                beta = get_beta(i, n_minibatches, beta_type, epoch, n_epochs, warmup_epochs)
+                kl *= beta
+            else:
+                kl = torch.tensor([0])
             ELBOloss = nll + kl
 
-            # compute gradient and do optimizer step
             optimizer.zero_grad()
             ELBOloss.backward()
             optimizer.step()
 
-            # count correct predictions
             _, labels = output.max(1)
             correct += labels.eq(target).sum().float().item()
 
-            # keep track of training measures
             kl_l.append(kl.item())
             nll_l.append(nll.item())
 
@@ -124,8 +141,8 @@ class ClassificationTrainer(object):
         correct = 0
         with torch.no_grad():
             for input, target in data_loader:
-                input = input.to(self.device)
-                target = target.to(self.device)
+                input = input.type(self.dtype)
+                target = target.type(self.dtype)
 
                 # compute output
                 output = self.net(input)
@@ -136,70 +153,42 @@ class ClassificationTrainer(object):
 
         return correct.float() * 100 / len(data_loader.dataset)
 
-    def save(self, path):
+    def save(self, path, **kwargs):
         self.train_data['batch_size'] = self.train_loader.batch_size
+        for key, value in kwargs.items():
+            self.train_data[key] = value
         torch.save(self.train_data, path)
 
-class Predictor(object):
+class Predictor:
     def __init__(self,
-                net,
-                n_classes,
-                device_ids=None):
-        super(Predictor, self).__init__()
+                 net,
+                 num_classes,
+                 gpu=1):
+        # super(Predictor, self).__init__()
 
-        self.device_ids = device_ids
-        use_cuda = torch.cuda.is_available() and device_ids is not None
-        self.device = torch.device("cuda:{}".format(device_ids[0]) if use_cuda else "cpu")
-        self.net = net.to(self.device)
-        self.n_classes = n_classes
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
+        self.dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 
-    def predict(self, data_loader, n_samples, activation=torch.nn.Softmax(dim=1), variance=None):
-        self.net.eval()
+        self.net = net.type(dtype)
+        self.num_classes = num_classes
 
-        batch_size = data_loader.batch_size
-        len_dataset = len(data_loader.dataset)
+    def predict(self, data_loader, n_samples=25):
+        # self.net.eval()
 
-        total = n_samples * len_dataset
-        current = 0
-
-        start = time.time()
-
-        sys.stdout.write("[" + " "*50 + "] {:6.2f}% | {} min {} s".format(0, 0, 0))
-
-        samples = np.empty((n_samples, len_dataset, self.n_classes))
-
+        logits = []
+        labels = []
         with torch.no_grad():
-            for i, (input, _) in enumerate(data_loader):
-                input = input.to(self.device)
-                for n in range(n_samples):
-                    samples[n, i*batch_size:min(len_dataset, (i+1)*batch_size), :] = activation(self.net(input)).data.cpu().numpy()
+            for i in range(n_samples):
+                for batch_idx, (data, target) in enumerate(data_loader):
+                    data, target = data.to(device), target.to(device)
+                    output = torch.softmax(self.net(data), dim=1)
+                    logits.append(output.detach().unsqueeze(0))
+                    labels.append(target.detach().unsqueeze(0))
+        logits = torch.cat(logits, dim=0)
+        labels = torch.cat(labels, dim=0)
 
-                    current += len(input)
-                    perc = float(current)/total*100
+        p_hat = logits.cpu().reshape(-1, len(data_loader)*data_loader.batch_size, self.num_classes)
 
-                    sys.stdout.write("\r[" + "-" * int(perc/2) + " " * (50-int(perc/2)) + "] {:6.2f}% | {} min {} s"\
-                                     .format(perc, int((time.time()-start)/60), int((time.time()-start)%60)))
+        pred, uncert, ale, epi = uncert_classification_kwon(p_hat)
 
-        outputs = np.mean(samples, axis=0)
-        variances = np.array([self.output_variance(samples[:,i,:], output, variance) for i, output in enumerate(outputs)])
-        labels = np.argmax(outputs, axis=1)
-
-        return labels, variances, outputs, samples
-
-    @staticmethod
-    def output_variance(p, p_mean, variance):
-        aleatoric = np.mean(p - np.square(p), axis=0)
-        epistemic = np.mean(np.square(p - np.tile(p_mean, (len(p), 1))), axis=0)
-        if variance == 'top':
-            aleatoric = aleatoric[np.argmax(p_mean)]
-            epistemic = epistemic[np.argmax(p_mean)]
-        elif variance == 'sum':
-            aleatoric = np.sum(aleatoric, axis=1)
-            epistemic = np.sum(epistemic, axis=1)
-        return aleatoric + epistemic, aleatoric, epistemic
-
-    @staticmethod
-    def accuracy(labels, targets):
-        if isinstance(targets, torch.Tensor):
-            targets = targets.numpy()
-        return np.sum((labels == targets))*100.0/len(labels)
+        return pred.argmax(dim=1), uncert, ale, epi
