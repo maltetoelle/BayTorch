@@ -1,94 +1,79 @@
 import torch
-import torch.nn as nn
+from torch.nn import Parameter, Module
 from torch.nn.functional import softplus
 from torch.distributions.normal import Normal
+from torch.distributions.kl import kl_divergence
 
-class VIModule(nn.Module):
+from ..distributions import mc_kl_divergence, MixtureNormal
+
+class VIModule(Module):
 
     def __init__(self,
-                 weight_posterior,
-                 weight_prior,
-                 bias_posterior,
-                 bias_prior,
-                 kl_divergence_fn):
+                 layer_fn,
+                 weight_size,
+                 bias_size=None,
+                 prior=None,
+                 posteriors=None,
+                 kl_type='forward'):
 
         super(VIModule, self).__init__()
 
-        self.weight_loc = weight_posterior['loc']
-        self.weight_ro = weight_posterior['ro']
-        self.weight_prior = weight_prior
+        self.layer_fn = layer_fn
 
-        if bias_posterior is None:
-            self.bias_loc = None
-            self.bias_ro = None
-            self.bias_prior = None
+        if prior is None:
+            prior = {'mu': 0, 'sigma': 0.1}
+
+        if posteriors is None:
+            posteriors = {
+                'mu': (0, 0.1),
+                'rho': (-3., 0.1)
+            }
+
+        if 'pi' in prior.keys():
+            self._kl_divergence = mc_kl_divergence
+            self.prior = MixtureNormal(prior['mu'], prior['sigma'], prior['pi'])
         else:
-            self.bias_loc = bias_posterior['loc']
-            self.bias_ro = bias_posterior['ro']
-            self.bias_prior = bias_prior
+            self._kl_divergence = kl_divergence
+            self.prior = Normal(prior['mu'], prior['sigma'])
 
-        self.kl_divergence = kl_divergence_fn
+        self.kl_type = kl_type
+
+        self.posterior_mu_initial = posteriors['mu']
+        self.posterior_rho_initial = posteriors['rho']
+
+        self.W_mu = Parameter(torch.empty(weight_size))
+        self.W_rho = Parameter(torch.empty(weight_size))
+        if bias_size is not None:
+            self.bias_mu = Parameter(torch.empty(bias_size))
+            self.bias_rho = Parameter(torch.empty(bias_size))
+        else:
+            self.register_parameter('bias_mu', None)
+            self.register_parameter('bias_rho', None)
+
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        self.W_mu.data.normal_(*self.posterior_mu_initial)
+        self.W_rho.data.normal_(*self.posterior_rho_initial)
+
+        if self.bias_mu is not None:
+            self.bias_mu.data.normal_(*self.posterior_mu_initial)
+            self.bias_rho.data.normal_(*self.posterior_rho_initial)
 
     @property
     def _kl(self):
-        kl = torch.sum(self.kl_divergence(Normal(self.weight_loc.cpu(), softplus(self.weight_ro).cpu()), self.weight_prior))
-        if self.bias_loc is not None:
-            kl += torch.sum(self.kl_divergence(Normal(self.bias_loc.cpu(), softplus(self.bias_ro).cpu()), self.bias_prior))
+        kl = self.kl_divergence(Normal(self.W_mu.cpu(), softplus(self.W_rho).cpu()), self.prior).sum()
+        if self.bias_mu is not None:
+            kl += self.kl_divergence(Normal(self.bias_mu.cpu(), softplus(self.bias_rho).cpu()), self.prior).sum()
         return kl
 
+    def kl_divergence(self, p, q, kl_type='reverse'):
+        if kl_type == 'reverse':
+            return self._kl_divergence(q, p)
+        else:
+            return self._kl_divergence(p, q)
+
     @staticmethod
-    def rsample(loc, scale):
-        eps = torch.empty(loc.shape, dtype=loc.dtype, device=loc.device).normal_()
-        return loc + eps * scale
-
-    def extra_repr(self):
-        s = "weight: {}, bias: {}".format(list(self.weight_loc.size()), list(self.bias_loc.size()))
-        return s
-
-class RTLayer(VIModule):
-
-    def __init__(self,
-                 weight_posterior,
-                 weight_prior,
-                 bias_posterior,
-                 bias_prior,
-                 kl_divergence_fn,
-                 layer_fn,
-                 **kwargs):
-
-        super(RTLayer, self).__init__(weight_posterior,
-                                                      weight_prior,
-                                                      bias_posterior,
-                                                      bias_prior,
-                                                      kl_divergence_fn)
-        self.layer_fn = layer_fn
-        self.kwargs = kwargs
-
-    def forward(self, input):
-        bias_sample = self.rsample(self.bias_loc, softplus(self.bias_ro)) if self.bias_loc is not None else None
-        return self.layer_fn(input, self.rsample(self.weight_loc, softplus(self.weight_ro)), bias_sample, **self.kwargs)
-
-class LRTLayer(VIModule):
-
-    def __init__(self,
-                 weight_posterior,
-                 weight_prior,
-                 bias_posterior,
-                 bias_prior,
-                 kl_divergence_fn,
-                 layer_fn,
-                 **kwargs):
-
-        super(LRTLayer, self).__init__(weight_posterior,
-                                                           weight_prior,
-                                                           bias_posterior,
-                                                           bias_prior,
-                                                           kl_divergence_fn)
-        self.layer_fn = layer_fn
-        self.kwargs = kwargs
-
-    def forward(self, input):
-        bias_var = softplus(self.bias_ro)**2 if self.bias_loc is not None else None
-        output_loc = self.layer_fn(input, self.weight_loc, self.bias_loc, **self.kwargs)
-        output_scale = torch.sqrt(1e-9 + self.layer_fn(input.pow(2), softplus(self.weight_ro)**2, bias_var, **self.kwargs))
-        return self.rsample(output_loc, output_scale)
+    def rsample(mu, sigma):
+        eps = torch.empty(mu.size()).normal_(0, 1).to(mu.device)
+        return mu + eps * sigma

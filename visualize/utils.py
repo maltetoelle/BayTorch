@@ -20,6 +20,9 @@ def get_params_mi(net):
     sigmas = []
     for module in _net.modules():
         if isinstance(module, (Conv2dRT, Conv2dLRT, LinearRT, LinearLRT)):
-            mus.append(torch.flatten(module.weight_loc.requires_grad_(False)))
-            sigmas.append(torch.flatten(F.softplus(module.weight_ro.requires_grad_(False))))
+            mus.append(torch.flatten(module.W_mu.requires_grad_(False)))
+            sigmas.append(torch.flatten(F.softplus(module.W_rho.requires_grad_(False))))
+            mus.append(torch.flatten(module.bias_mu.requires_grad_(False)))
+            sigmas.append(torch.flatten(F.softplus(module.bias_rho.requires_grad_(False))))
+
     return torch.cat(mus).cpu().numpy(), torch.cat(sigmas).cpu().numpy()

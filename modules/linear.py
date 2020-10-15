@@ -1,0 +1,45 @@
+from torch.nn.functional import linear
+
+from .reparam_layers import RTLayer, LRTLayer
+
+class LinearRT(RTLayer):
+
+    def __init__(self,
+                 in_features,
+                 out_features,
+                 prior=None,
+                 posteriors=None):
+
+        self.in_features = in_features
+        self.out_featurs = out_features
+
+        weight_size = (out_features, in_features)
+
+        bias_size = (out_features) if bias else None
+
+        super(LinearRT, self).__init__(layer_fn=linear,
+                                        weight_size=weight_size,
+                                        bias_size=bias_size,
+                                        prior=prior,
+                                        posteriors=posteriors)
+
+class LinearLRT(LRTLayer):
+
+    def __init__(self,
+                 in_features,
+                 out_features,
+                 prior=None,
+                 posteriors=None):
+
+        self.in_features = in_features
+        self.out_featurs = out_features
+
+        weight_size = (out_features, in_features)
+
+        bias_size = (out_features) if bias else None
+
+        super(LinearLRT, self).__init__(layer_fn=linear,
+                                        weight_size=weight_size,
+                                        bias_size=bias_size,
+                                        prior=prior,
+                                        posteriors=posteriors)

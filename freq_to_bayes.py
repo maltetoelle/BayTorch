@@ -2,8 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .modules.layers import *
-from .modules.bbb_layers import Conv2dLRT as BBBConv2d
+from .modules import Conv2dRT, Conv2dLRT, LinearRT, LinearLRT
 
 class MeanFieldVI(nn.Module):
 
@@ -12,8 +11,7 @@ class MeanFieldVI(nn.Module):
         self.net = net
 
         if reparam == 'local':
-            self._conv2d = BBBConv2d
-            # self._conv2d = Conv2dLRT
+            self._conv2d = Conv2dLRT
             self._linear = LinearLRT
         else:
             self._conv2d = Conv2dRT
