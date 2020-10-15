@@ -111,7 +111,7 @@ class ClassificationTrainer:
                     output += self.net(input)
                 output /= n
 
-            nll = criterion(output, target.long(), reduction='mean')
+            nll = criterion(output, target.long(), reduction='sum')
             if hasattr(self.net, 'kl'):
                 kl = self.net.kl.type(self.dtype)
                 beta = get_beta(i, n_minibatches, beta_type, epoch, n_epochs, warmup_epochs)
