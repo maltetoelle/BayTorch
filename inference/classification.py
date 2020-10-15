@@ -84,7 +84,7 @@ class ClassificationTrainer:
 
         self.train_data = {
             'accuracy_train': accuracy_train,
-            'accuracy_test': accuracy_test,
+            'accuracy_val': accuracy_val,
             'nll': nll,
             'kl': kl,
             'state_dict': self.net.state_dict(),
