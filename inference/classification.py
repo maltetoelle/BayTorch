@@ -14,8 +14,7 @@ class ClassificationTrainer:
     def __init__(self,
                 net,
                 train_loader,
-                val_loader=None,
-                net_path=None, # for further training!
+                val_loader=None, # for further training!
                 gpu=1):
 
         # super(Trainer, self).__init__()
