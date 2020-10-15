@@ -33,7 +33,7 @@ class ClassificationTrainer:
 
         optimizer = torch.optim.AdamW(self.net.parameters(), **opt_kwargs)
         if net_path is not None:
-            train_data = torch.load(path)
+            train_data = torch.load(net_path)
             self.net.load_state_dict(train_data['state_dict'])
             optimizer.load_state_dict(train_data['optimizer'])
 
