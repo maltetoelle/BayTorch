@@ -168,7 +168,7 @@ class Predictor:
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
         self.dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 
-        self.net = net.type(dtype)
+        self.net = net.type(self.dtype)
         self.num_classes = num_classes
 
     def predict(self, data_loader, n_samples=25):
