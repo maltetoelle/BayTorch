@@ -179,7 +179,7 @@ class Predictor:
         with torch.no_grad():
             for i in range(n_samples):
                 for batch_idx, (data, target) in enumerate(data_loader):
-                    data, target = data.to(device), target.to(device)
+                    data, target = data.type(self.dtype), target.type(self.dtype)
                     output = torch.softmax(self.net(data), dim=1)
                     logits.append(output.detach().unsqueeze(0))
                     labels.append(target.detach().unsqueeze(0))
