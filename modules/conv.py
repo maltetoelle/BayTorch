@@ -15,7 +15,8 @@ class Conv2dRT(RTLayer):
                  dilation=1,
                  groups=1,
                  prior=None,
-                 posteriors=None):
+                 posteriors=None,
+                 kl_type='reverse'):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -30,6 +31,7 @@ class Conv2dRT(RTLayer):
                                         bias_size=bias_size,
                                         prior=prior,
                                         posteriors=posteriors,
+                                        kl_type=kl_type,
                                         stride=stride,
                                         padding=padding,
                                         dilation=dilation,
@@ -47,7 +49,8 @@ class Conv2dLRT(LRTLayer):
                  dilation=1,
                  groups=1,
                  prior=None,
-                 posteriors=None):
+                 posteriors=None,
+                 kl_type='reverse'):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -62,6 +65,7 @@ class Conv2dLRT(LRTLayer):
                                         bias_size=bias_size,
                                         prior=prior,
                                         posteriors=posteriors,
+                                        kl_type=kl_type,
                                         stride=stride,
                                         padding=padding,
                                         dilation=dilation,

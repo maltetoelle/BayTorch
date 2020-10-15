@@ -14,11 +14,13 @@ class VIModule(Module):
                  bias_size=None,
                  prior=None,
                  posteriors=None,
-                 kl_type='forward'):
+                 kl_type='reverse',
+                 **kwargs):
 
         super(VIModule, self).__init__()
 
         self.layer_fn = layer_fn
+        self.kwargs = kwargs
 
         if prior is None:
             prior = {'mu': 0, 'sigma': 0.1}
@@ -29,7 +31,7 @@ class VIModule(Module):
                 'rho': (-3., 0.1)
             }
 
-        if 'pi' in prior.keys():
+        if 'pi' in list(prior.keys()):
             self._kl_divergence = mc_kl_divergence
             self.prior = MixtureNormal(prior['mu'], prior['sigma'], prior['pi'])
         else:
@@ -62,9 +64,9 @@ class VIModule(Module):
 
     @property
     def _kl(self):
-        kl = self.kl_divergence(Normal(self.W_mu.cpu(), softplus(self.W_rho).cpu()), self.prior).sum()
+        kl = self.kl_divergence(Normal(self.W_mu.cpu(), softplus(self.W_rho).cpu()), self.prior, self.kl_type).sum()
         if self.bias_mu is not None:
-            kl += self.kl_divergence(Normal(self.bias_mu.cpu(), softplus(self.bias_rho).cpu()), self.prior).sum()
+            kl += self.kl_divergence(Normal(self.bias_mu.cpu(), softplus(self.bias_rho).cpu()), self.prior, self.kl_type).sum()
         return kl
 
     def kl_divergence(self, p, q, kl_type='reverse'):

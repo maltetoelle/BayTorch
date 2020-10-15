@@ -6,7 +6,13 @@ from .modules import Conv2dRT, Conv2dLRT, LinearRT, LinearLRT
 
 class MeanFieldVI(nn.Module):
 
-    def __init__(self, net, prior_scale=1., prior_pi=None, reparam='local'):
+    def __init__(self,
+                 net,
+                 prior=None,
+                 posteriors=None,
+                 kl_type='reverse',
+                 reparam='local'):
+
         super(MeanFieldVI, self).__init__()
         self.net = net
 
@@ -17,7 +23,7 @@ class MeanFieldVI(nn.Module):
             self._conv2d = Conv2dRT
             self._linear = LinearRT
 
-        self._replace_deterministic_modules(self.net, prior_scale, prior_pi)
+        self._replace_deterministic_modules(self.net, prior, posteriors, kl_type)
         self.net.kl = self.kl
 
     def forward(self, x):
@@ -31,23 +37,30 @@ class MeanFieldVI(nn.Module):
                 kl += layer._kl
         return kl
 
-    def _replace_deterministic_modules(self, module, prior_scale, prior_pi):
+    def _replace_deterministic_modules(self, module, prior, posteriors, kl_type):
         for key, _module in module._modules.items():
             if len(_module._modules):
-                self._replace_deterministic_modules(_module, prior_scale, prior_pi)
+                self._replace_deterministic_modules(_module, prior, posteriors, kl_type)
             else:
                 if isinstance(_module, nn.Linear):
-                    layer = self._linear(_module.in_features, _module.out_features, torch.is_tensor(_module.bias), prior_scale=prior_scale, prior_pi=prior_pi)
+                    layer = self._linear(
+                        _module.in_features,
+                        _module.out_features,
+                        torch.is_tensor(_module.bias))
                     module._modules[key] = layer
                 elif isinstance(_module, nn.Conv2d):
                     layer = self._conv2d(
                         in_channels=_module.in_channels,
                         out_channels=_module.out_channels,
                         kernel_size=_module.kernel_size,
+                        bias=torch.is_tensor(_module.bias),
                         stride=_module.stride,
                         padding=_module.padding,
                         dilation=_module.dilation,
-                        bias=torch.is_tensor(_module.bias))#, groups=_module.groups, prior_scale=prior_scale, prior_pi=prior_pi)
+                        groups=_module.groups,
+                        prior=prior,
+                        posteriors=posteriors,
+                        kl_type=kl_type)
                     module._modules[key] = layer
 
 class MCDropoutVI(nn.Module):

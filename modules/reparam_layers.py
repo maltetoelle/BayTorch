@@ -11,13 +11,15 @@ class RTLayer(VIModule):
                  bias_size=None,
                  prior=None,
                  posteriors=None,
+                 kl_type='reverse',
                  **kwargs):
 
-        super(RTLayer, self).__init__(layer_fn,
-                                      weight_size,
-                                      bias_size,
-                                      prior,
-                                      posteriors)
+        super(RTLayer, self).__init__(layer_fn=layer_fn,
+                                      weight_size=weight_size,
+                                      bias_size=bias_size,
+                                      prior=prior,
+                                      posteriors=posteriors,
+                                      kl_type=kl_type)
         self.kwargs = kwargs
 
     def forward(self, x, sample=True):
@@ -41,13 +43,15 @@ class LRTLayer(VIModule):
                  bias_size=None,
                  prior=None,
                  posteriors=None,
+                 kl_type='reverse',
                  **kwargs):
 
-        super(LRTLayer, self).__init__(layer_fn,
-                                       weight_size,
-                                       bias_size,
-                                       prior,
-                                       posteriors)
+        super(LRTLayer, self).__init__(layer_fn=layer_fn,
+                                       weight_size=weight_size,
+                                       bias_size=bias_size,
+                                       prior=prior,
+                                       posteriors=posteriors,
+                                       kl_type=kl_type)
         self.kwargs = kwargs
 
     def forward(self, x, sample=True):
