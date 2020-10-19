@@ -8,7 +8,7 @@ from ..modules import Conv2dRT, Conv2dLRT, LinearRT, LinearLRT
 
 def get_params(net):
     # _net = copy.deepcopy(net)
-    params = [torch.flatten(p.requires_grad_(False)) for p in _net.parameters() if p.requires_grad]
+    params = [torch.flatten(p.clone().requires_grad_(False)) for p in net.parameters() if p.requires_grad]
     params = torch.cat(params).cpu().numpy()
     return params
 
