@@ -13,16 +13,16 @@ def get_params(net):
     return params
 
 def get_params_mi(net):
-    _net = nn.Sequential(net._modules.copy())
-    _net.load_state_dict(net.state_dict().copy())
+    # _net = nn.Sequential(net._modules.copy())
+    # _net.load_state_dict(net.state_dict().copy())
 
     mus = []
     sigmas = []
-    for module in _net.modules():
+    for module in net.modules():
         if isinstance(module, (Conv2dRT, Conv2dLRT, LinearRT, LinearLRT)):
-            mus.append(torch.flatten(module.W_mu.requires_grad_(False)))
-            sigmas.append(torch.flatten(F.softplus(module.W_rho.requires_grad_(False))))
-            mus.append(torch.flatten(module.bias_mu.requires_grad_(False)))
-            sigmas.append(torch.flatten(F.softplus(module.bias_rho.requires_grad_(False))))
+            mus.append(torch.flatten(module.W_mu.detach()))
+            sigmas.append(torch.flatten(F.softplus(module.W_rho.detach())))
+            mus.append(torch.flatten(module.bias_mu.detach()))
+            sigmas.append(torch.flatten(F.softplus(module.bias_rho.detach())))
 
     return torch.cat(mus).cpu().numpy(), torch.cat(sigmas).cpu().numpy()
