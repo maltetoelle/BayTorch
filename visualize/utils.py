@@ -13,6 +13,7 @@ def get_params(net):
     return params
 
 def get_params_mi(net):
+    import pdb; pdb.set_trace()
     _net = nn.Sequential(net._modules)
     _net.load_state_dict(net.state_dict())
 
