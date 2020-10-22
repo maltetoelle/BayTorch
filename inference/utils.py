@@ -72,18 +72,18 @@ class ThresholdPruning(prune.BasePruningMethod):
 class L1UnstructuredFFG(prune.BasePruningMethod):
     PRUNING_TYPE = "unstructured"
 
-    def __init__(self, W_mu, W_rho, amount):
+    def __init__(self, W, amount):
         super(L1UnstructuredFFG, self).__init__()
         self.idx = 0
         self.masks = []
-        for _mu, _rho in zip(W_mu, W_rho):
-            mu, rho = _mu[0].W_mu, _rho[0].W_rho
+        for w in W:
+            mu, rho = w[0].W_mu, w[0].W_rho
             snr = torch.abs(mu) / softplus(rho)
             snr_np = snr.detach().cpu().numpy()
             kth = int(amount * np.array(snr_np.shape).prod())
             idx = self.smallest_N_indices(snr_np, kth)
             mask = torch.ones(mu.size()).type(mu.dtype)
-            if isinstance(_mu[0], (Conv2dRT, Conv2dLRT)):
+            if isinstance(w[0], (Conv2dRT, Conv2dLRT)):
                 mask[idx[:,0], idx[:,1], idx[:,2], idx[:,3]] = 0.
             else:
                 mask[idx[:,0], mask[:,1]] = 0.
