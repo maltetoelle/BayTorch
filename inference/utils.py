@@ -89,7 +89,6 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
         idx = self.smallest_N_indices(snrs, kth)
         self.mask = torch.ones(len(snrs)).to(mu.device)
         self.mask[idx.flatten()] = 0.
-        print(self.mask.mean())
 
         # self.mask = mask.type(torch.ByteTensor)
         #     kth = int(amount * np.array(snr_np.shape).prod())
@@ -103,7 +102,6 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
         # self.mask = torch.cat(masks).to(mu.device)
 
     def compute_mask(self, tensor, default_mask):
-        import pdb; pdb.set_trace()
         return self.mask
 
     @staticmethod
