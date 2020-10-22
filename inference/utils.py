@@ -109,27 +109,29 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
         idx = array.ravel().argsort()[:N]
         return np.stack(np.unravel_index(idx, array.shape)).T
 
-def prune_weights(net, mode='threshold', w_thresh=0., b_thresh=None, w_percentage=0., b_percentage=0.):
-    weights_to_prune = [(m, 'weight') for m in net.modules() if isinstance(m, (nn.Linear, nn.Conv2d))]
-    biasses_to_prune = [(m, 'bias') for m in net.modules() if isinstance(m, (nn.Linear, nn.Conv2d))]
+def prune_weights(net, mode='threshold', thresh=0., amount=0.):
+    thresh_prune = lambda w, thresh: prune.global_unstructured(w, pruning_method=ThresholdPruning, threshold=thresh)
+    L1_prune = lambda w, amount: prune.global_unstructured(w, pruning_method=prune.L1Unstructured, amount=amount)
+    w_to_prune = ['weight', 'bias']
 
-    if mode == 'threshold':
-        prune.global_unstructured(weights_to_prune, pruning_method=ThresholdPruning, threshold=w_thresh)
-        prune.global_unstructured(biasses_to_prune, pruning_method=ThresholdPruning, threshold=b_thresh)
-    elif mode == 'percentage':
-        prune.global_unstructured(weights_to_prune, pruning_method=prune.L1Unstructured, amount=w_percentage)
-        prune.global_unstructured(biasses_to_prune, pruning_method=prune.L1Unstructured, amount=b_percentage)
+    for w in w_to_prune:
+        _w_to_prune = [(m, w) for m in net.modules() if isinstance(m, (nn.Linear, nn.Conv2d))]
+        if mode == 'threshold':
+            thresh_prune(_w_to_prune, thresh)
+        elif mode == 'percentage':
+            L1_prune(_w_to_prune, amount)
 
-def prune_weights_mi(net, mode='threshold', w_thresh=0., b_thresh=None, w_percentage=0., b_percentage=0.):
-    weights_to_prune = [(m, 'weight') for m in net.modules() if isinstance(m, (LinearRT, LinearLRT, Conv2dRT, Conv2dLRT))]
-    biasses_to_prune = [(m, 'bias') for m in net.modules() if isinstance(m, (LinearRT, LinearLRT, Conv2dRT, Conv2dLRT))]
+def prune_weights_ffg(net, mode='percentage', thresh=0., amount=0.):
+    thresh_prune = lambda w, thresh: prune.global_unstructured(w, pruning_method=ThresholdPruning, threshold=thresh)
+    L1_prune = lambda w, amount: prune.global_unstructured(w, pruning_method=L1UnstructuredFFG, amount=amount)
+    w_to_prune = ['W_mu', 'W_rho', 'bias_mu', 'bias_rho']
 
-    if mode == 'threshold':
-        prune.global_unstructured(weights_to_prune, pruning_method=ThresholdPruning, threshold=w_thresh)
-        prune.global_unstructured(biasses_to_prune, pruning_method=ThresholdPruning, threshold=b_thresh)
-    elif mode == 'percentage':
-        prune.global_unstructured(weights_to_prune, pruning_method=prune.L1Unstructured, amount=w_percentage)
-        prune.global_unstructured(biasses_to_prune, pruning_method=prune.L1Unstructured, amount=b_percentage)
+    for w in w_to_prune:
+        _w_to_prune = [(m, w) for m in net.modules() if isinstance(m, (LinearRT, LinearLRT, Conv2dRT, Conv2dLRT))]
+        if mode == 'threshold':
+            thresh_prune(_w_to_prune, thresh)
+        elif mode == 'percentage':
+            L1_prune(_w_to_prune, amount)
 
 def norm_grad(net):
     pass
