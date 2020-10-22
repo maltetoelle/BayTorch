@@ -75,22 +75,30 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
     def __init__(self, W, amount):
         super(L1UnstructuredFFG, self).__init__()
         masks = []
+        snrs = np.array([])
         for w in W:
             if w[1][0] == 'W':
                 mu, rho = w[0].W_mu, w[0].W_rho
             elif w[1][0] == 'b':
                 mu, rho = w[0].bias_mu, w[0].bias_rho
             snr = torch.abs(mu) / softplus(rho)
-            snr_np = snr.detach().cpu().numpy()
-            kth = int(amount * np.array(snr_np.shape).prod())
-            idx = self.smallest_N_indices(snr_np, kth)
-            mask = torch.ones(mu.size()).type(mu.dtype)
-            if isinstance(w[0], (Conv2dRT, Conv2dLRT)):
-                mask[idx[:,0], idx[:,1], idx[:,2], idx[:,3]] = 0.
-            else:
-                mask[idx[:,0], mask[:,1]] = 0.
-            masks.append(mask.flatten())
-        self.mask = torch.cat(masks).to(mu.device)
+            snr_np = snr.detach().cpu().numpy().flatten()
+            snrs = np.hstack((snrs, snr_np))
+
+        kth = int(amount * len(snrs))
+        idx = np.argpartition(snrs, kth=kth)
+        mask = torch.ones(len(snrs)).to(W[0][0].device)
+        mask[idx] = 0.
+        self.mask = mask.type(torch.ByteTensor)
+        #     kth = int(amount * np.array(snr_np.shape).prod())
+        #     idx = self.smallest_N_indices(snr_np, kth)
+        #     mask = torch.ones(mu.size()).type(mu.dtype)
+        #     if isinstance(w[0], (Conv2dRT, Conv2dLRT)):
+        #         mask[idx[:,0], idx[:,1], idx[:,2], idx[:,3]] = 0.
+        #     else:
+        #         mask[idx[:,0], mask[:,1]] = 0.
+        #     masks.append(mask.flatten())
+        # self.mask = torch.cat(masks).to(mu.device)
 
     def compute_mask(self, tensor, default_mask):
         import pdb; pdb.set_trace()
