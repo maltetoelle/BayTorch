@@ -87,7 +87,8 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
 
         kth = int(amount * len(snrs))
         idx = np.argpartition(snrs, kth=kth)
-        mask = torch.ones(len(snrs)).to(W[0][0].W_mu.device)
+        import pdb; pdb.set_trace()
+        mask = torch.ones(len(snrs)).to(mu.device)
         mask[idx] = 0.
         self.mask = mask.type(torch.ByteTensor)
         #     kth = int(amount * np.array(snr_np.shape).prod())
