@@ -123,7 +123,7 @@ def prune_weights(net, mode='threshold', thresh=0., amount=0.):
 
 def prune_weights_ffg(net, mode='percentage', thresh=0., amount=0.):
     thresh_prune = lambda w, thresh: prune.global_unstructured(w, pruning_method=ThresholdPruning, threshold=thresh)
-    L1_prune = lambda w, amount: prune.global_unstructured(w, pruning_method=L1UnstructuredFFG, amount=amount)
+    L1_prune = lambda w, amount: prune.global_unstructured(w, pruning_method=L1UnstructuredFFG, amount=amount, W=w)
     w_to_prune = ['W_mu', 'W_rho', 'bias_mu', 'bias_rho']
 
     for w in w_to_prune:
@@ -131,7 +131,6 @@ def prune_weights_ffg(net, mode='percentage', thresh=0., amount=0.):
         if mode == 'threshold':
             thresh_prune(_w_to_prune, thresh)
         elif mode == 'percentage':
-            import pdb; pdb.set_trace()
             L1_prune(_w_to_prune, amount)
 
 def norm_grad(net):
