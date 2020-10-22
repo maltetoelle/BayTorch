@@ -86,7 +86,7 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
             snrs = np.hstack((snrs, snr_np))
 
         kth = int(amount * len(snrs))
-        idx = np.argpartition(snrs, kth=kth)
+        idx = self.smallest_N_indices(snrs, kth)
         import pdb; pdb.set_trace()
         mask = torch.ones(len(snrs)).to(mu.device)
         mask[idx] = 0.
