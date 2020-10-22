@@ -72,7 +72,7 @@ class ThresholdPruning(prune.BasePruningMethod):
 class L1UnstructuredFFG(prune.BasePruningMethod):
     PRUNING_TYPE = "unstructured"
 
-    def __init__(self, W_mu, W_rho, percentage):
+    def __init__(self, W_mu, W_rho, amount):
         super(PercentagePruningFFG, self).__init__()
         self.percentage = percentage
         for mu, rho in zip(W_mu, W_rho):
