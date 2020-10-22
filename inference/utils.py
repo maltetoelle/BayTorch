@@ -88,8 +88,6 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
             else:
                 mask[idx[:,0], mask[:,1]] = 0.
             self.masks.append(mask)
-            #idx = np.argpartion(snr_np)
-            import pdb; pdb.set_trace()
 
     def compute_mask(self, tensor, default_mask):
         mask = self.masks[self.idx]
