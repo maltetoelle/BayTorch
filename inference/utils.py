@@ -76,6 +76,7 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
         super(L1UnstructuredFFG, self).__init__()
         self.amount = amount
         for mu, rho in zip(W_mu, W_rho):
+            import pdb; pdb.set_trace()
             snr = torch.abs(mu) / softplus(rho)
             snr_np = snr.cpu().numpy()
             idx = np.argpartion(snr_np)
