@@ -83,7 +83,7 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
                 mu, rho = w[0].bias_mu, w[0].bias_rho
             snr = torch.abs(mu) / softplus(rho)
             snr_np = snr.detach().cpu().numpy().flatten()
-            snrs = np.hstack((snrs, snr_np))
+            snrs = np.hstack((snrs, np.log(snr_np)))
 
         kth = int(amount * len(snrs))
         idx = self.smallest_N_indices(snrs, kth)
