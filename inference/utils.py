@@ -1,9 +1,12 @@
 import torch
 import torch.nn as nn
 from torch.nn.utils import prune
+from torch.nn.functional import softplus
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+from ..modules import LinearRT, LinearLRT, Conv2dRT, Conv2dLRT
 
 def uncert_regression_gal(img_list: torch.Tensor, reduction: str = 'mean'):
     img_list = torch.cat(img_list, dim=0)
@@ -60,14 +63,39 @@ class ThresholdPruning(prune.BasePruningMethod):
     PRUNING_TYPE = "unstructured"
 
     def __init__(self, threshold):
+        super(ThresholdPruning, self).__init__()
         self.threshold = threshold
 
     def compute_mask(self, tensor, default_mask):
         return torch.abs(tensor) > self.threshold
 
+class PercentagePruningFFG(prune.BasePruningMethod):
+    PRUNING_TYPE = "unstructured"
+
+    def __init__(self, percentage):
+        super(PercentagePruningFFG, self).__init__()
+        self.percentage = percentage
+
+    def compute_mask(self, mu, sigma, default_mask):
+        snr = torch.abs(mu) / softplus(sigma)
+        snr_np = snr.cpu().numpy()
+        idx = np.argpartion(snr_np)
+        import pdb; pdb.set_trace()
+
 def prune_weights(net, mode='threshold', w_thresh=0., b_thresh=None, w_percentage=0., b_percentage=0.):
     weights_to_prune = [(m, 'weight') for m in net.modules() if isinstance(m, (nn.Linear, nn.Conv2d))]
     biasses_to_prune = [(m, 'bias') for m in net.modules() if isinstance(m, (nn.Linear, nn.Conv2d))]
+
+    if mode == 'threshold':
+        prune.global_unstructured(weights_to_prune, pruning_method=ThresholdPruning, threshold=w_thresh)
+        prune.global_unstructured(biasses_to_prune, pruning_method=ThresholdPruning, threshold=b_thresh)
+    elif mode == 'percentage':
+        prune.global_unstructured(weights_to_prune, pruning_method=prune.L1Unstructured, amount=w_percentage)
+        prune.global_unstructured(biasses_to_prune, pruning_method=prune.L1Unstructured, amount=b_percentage)
+
+def prune_weights_mi(net, mode='threshold', w_thresh=0., b_thresh=None, w_percentage=0., b_percentage=0.):
+    weights_to_prune = [(m, 'weight') for m in net.modules() if isinstance(m, (LinearRT, LinearLRT, Conv2dRT, Conv2dLRT))]
+    biasses_to_prune = [(m, 'bias') for m in net.modules() if isinstance(m, (LinearRT, LinearLRT, Conv2dRT, Conv2dLRT))]
 
     if mode == 'threshold':
         prune.global_unstructured(weights_to_prune, pruning_method=ThresholdPruning, threshold=w_thresh)
