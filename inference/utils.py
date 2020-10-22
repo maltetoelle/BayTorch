@@ -77,7 +77,10 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
         self.idx = 0
         self.masks = []
         for w in W:
-            mu, rho = w[0].W_mu, w[0].W_rho
+            if w[1][0] = 'W':
+                mu, rho = w[0].W_mu, w[0].W_rho
+            elif w[1][0] = 'b':
+                mu, rho = w[0].bias_mu, w[0].bias_rho
             snr = torch.abs(mu) / softplus(rho)
             snr_np = snr.detach().cpu().numpy()
             kth = int(amount * np.array(snr_np.shape).prod())
@@ -90,6 +93,7 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
             self.masks.append(mask)
 
     def compute_mask(self, tensor, default_mask):
+        import pdb; pdb.set_trace()
         mask = self.masks[self.idx]
         self.idx += 1
         return mask
