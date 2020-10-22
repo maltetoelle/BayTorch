@@ -131,6 +131,7 @@ def prune_weights_ffg(net, mode='percentage', thresh=0., amount=0.):
         if mode == 'threshold':
             thresh_prune(_w_to_prune, thresh)
         elif mode == 'percentage':
+            import pdb; pdb.set_trace()
             L1_prune(_w_to_prune, amount)
 
 def norm_grad(net):
