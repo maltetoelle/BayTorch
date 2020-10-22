@@ -90,6 +90,7 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
             else:
                 mask[idx[:,0], mask[:,1]] = 0.
             masks.append(mask.flatten())
+            import pdb; pdb.set_trace()
         self.mask = torch.cat(masks).type(mu.dtype)
 
     def compute_mask(self, tensor, default_mask):
