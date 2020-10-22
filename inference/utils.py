@@ -79,6 +79,7 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
             mu, rho = _mu[0].W_mu, _rho[0].W_rho
             snr = torch.abs(mu) / softplus(rho)
             snr_np = snr.detach().cpu().numpy()
+            kth = int(amount * np.array(snr_np.shape).prod())
             #idx = np.argpartion(snr_np)
             import pdb; pdb.set_trace()
 
@@ -87,6 +88,11 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
         snr_np = snr.cpu().numpy()
         idx = np.argpartion(snr_np)
         import pdb; pdb.set_trace()
+
+    @staticmethod
+    def smallest_N_indices(array, N):
+        idx = array.ravel().argsort()[:N]
+        return np.stack(np.unravel_index(idx, array.shape)).T
 
 def prune_weights(net, mode='threshold', w_thresh=0., b_thresh=None, w_percentage=0., b_percentage=0.):
     weights_to_prune = [(m, 'weight') for m in net.modules() if isinstance(m, (nn.Linear, nn.Conv2d))]
