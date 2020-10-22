@@ -72,9 +72,13 @@ class ThresholdPruning(prune.BasePruningMethod):
 class PercentagePruningFFG(prune.BasePruningMethod):
     PRUNING_TYPE = "unstructured"
 
-    def __init__(self, percentage):
+    def __init__(self, mu, sigma, percentage):
         super(PercentagePruningFFG, self).__init__()
         self.percentage = percentage
+        snr = torch.abs(mu) / softplus(sigma)
+        snr_np = snr.cpu().numpy()
+        idx = np.argpartion(snr_np)
+        import pdb; pdb.set_trace()
 
     def compute_mask(self, mu, sigma, default_mask):
         snr = torch.abs(mu) / softplus(sigma)
