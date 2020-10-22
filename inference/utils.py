@@ -74,7 +74,7 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
 
     def __init__(self, W_mu, W_rho, amount):
         super(L1UnstructuredFFG, self).__init__()
-        self.percentage = percentage
+        self.amount = amount
         for mu, rho in zip(W_mu, W_rho):
             snr = torch.abs(mu) / softplus(rho)
             snr_np = snr.cpu().numpy()
