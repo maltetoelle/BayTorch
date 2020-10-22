@@ -74,8 +74,7 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
 
     def __init__(self, W, amount):
         super(L1UnstructuredFFG, self).__init__()
-        self.idx = 0
-        self.masks = []
+        masks = []
         for w in W:
             if w[1][0] == 'W':
                 mu, rho = w[0].W_mu, w[0].W_rho
@@ -90,13 +89,12 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
                 mask[idx[:,0], idx[:,1], idx[:,2], idx[:,3]] = 0.
             else:
                 mask[idx[:,0], mask[:,1]] = 0.
-            self.masks.append(mask)
+            masks.append(mask.flatten())
+        self.mask = torch.cat(masks)
 
     def compute_mask(self, tensor, default_mask):
         import pdb; pdb.set_trace()
-        mask = self.masks[self.idx]
-        self.idx += 1
-        return mask
+        return self.mask
 
     @staticmethod
     def smallest_N_indices(array, N):
