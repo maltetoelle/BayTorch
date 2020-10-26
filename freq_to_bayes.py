@@ -43,6 +43,7 @@ class MeanFieldVI(nn.Module):
                 self._replace_deterministic_modules(_module, prior, posteriors, kl_type)
             else:
                 if isinstance(_module, nn.Linear):
+                    import pdb; pdb.set_trace()
                     layer = self._linear(
                         _module.in_features,
                         _module.out_features,
