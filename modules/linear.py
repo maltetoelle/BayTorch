@@ -7,6 +7,7 @@ class LinearRT(RTLayer):
     def __init__(self,
                  in_features,
                  out_features,
+                 bias=True,
                  prior=None,
                  posteriors=None,
                  kl_type='reverse'):
@@ -30,6 +31,7 @@ class LinearLRT(LRTLayer):
     def __init__(self,
                  in_features,
                  out_features,
+                 bias=True,
                  prior=None,
                  posteriors=None,
                  kl_type='reverse'):
