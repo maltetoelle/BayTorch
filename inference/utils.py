@@ -14,6 +14,7 @@ def uncert_regression_gal(img_list: torch.Tensor, reduction: str = 'mean'):
     ale = img_list[:,-1:].mean(dim=0, keepdim=True)
     epi = torch.var(img_list[:,:-1], dim=0, keepdim=True)
     #if epi.shape[1] == 3:
+    import pdb; pdb.set_trace()
     epi = epi.mean(dim=1, keepdim=True)
     uncert = ale + epi
     if reduction == 'mean':
