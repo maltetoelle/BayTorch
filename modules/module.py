@@ -61,7 +61,7 @@ class VIModule(Module):
     def reset_parameters(self):
         self.weight.data[0].normal_(*self.posterior_mu_initial)
         self.weight.data[1].normal_(*self.posterior_rho_initial)
-        if self.bias_mu is not None:
+        if self.bias is not None:
             self.bias.data[0].normal_(*self.posterior_mu_initial)
             self.bias.data[1].normal_(*self.posterior_rho_initial)
 
