@@ -104,8 +104,8 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
         # self.mask = torch.cat(masks).to(mu.device)
 
     def compute_mask(self, tensor, default_mask):
-        mu = tensor[:int(0.5 * torch.size())].detach().cpu().numpy()
-        rho = tensor[int(0.5 * torch.size()):].detach().cpu().numpy()
+        mu = tensor[:int(0.5 * tensor.size())].detach().cpu().numpy()
+        rho = tensor[int(0.5 * tensor.size()):].detach().cpu().numpy()
         snrs = torch.abs(mu) / softplus(rho)
         # log_snrs = np.log(snrs)
 
