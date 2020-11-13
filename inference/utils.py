@@ -103,7 +103,7 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
         # self.mask = torch.cat(masks).to(mu.device)
 
     def compute_mask(self, tensor, default_mask):
-        return self.mask
+        return self.mask * default_mask
 
     @staticmethod
     def smallest_N_indices(array, N):
