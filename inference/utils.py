@@ -111,13 +111,12 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
 
         kth = int(self.amount * len(snrs))
         idx = self.smallest_N_indices(snrs, kth)
-        import pdb;pdb.set_trace()
-        mask = torch.ones(len(snrs)).to(mu.device)
+        mask = torch.ones(len(snrs)).to(tensor.device)
         mask[idx.flatten()] = 0.
         # snr_np = snr.detach().cpu().numpy().flatten()
         # snrs = np.hstack((snrs, np.log(snr_np)))
         # return self.mask * default_mask
-        return torch.hstack((mask, mask))
+        return torch.cat((mask, mask))
         # return self.mask
 
     # @classmethod
