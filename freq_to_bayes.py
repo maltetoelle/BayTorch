@@ -11,10 +11,12 @@ class MeanFieldVI(nn.Module):
                  prior=None,
                  posteriors=None,
                  kl_type='reverse',
-                 reparam='local'):
+                 reparam='local',
+                 _version='old'):
 
         super(MeanFieldVI, self).__init__()
         self.net = net
+        self._version = _version
 
         if reparam == 'local':
             self._conv2d = Conv2dLRT
@@ -46,7 +48,8 @@ class MeanFieldVI(nn.Module):
                     layer = self._linear(
                         _module.in_features,
                         _module.out_features,
-                        torch.is_tensor(_module.bias))
+                        torch.is_tensor(_module.bias),
+                        _version=self._version)
                     module._modules[key] = layer
                 elif isinstance(_module, nn.Conv2d):
                     layer = self._conv2d(
@@ -60,7 +63,8 @@ class MeanFieldVI(nn.Module):
                         groups=_module.groups,
                         prior=prior,
                         posteriors=posteriors,
-                        kl_type=kl_type)
+                        kl_type=kl_type,
+                        _version=self._version)
                     module._modules[key] = layer
 
 class MCDropoutVI(nn.Module):
