@@ -156,8 +156,8 @@ def prune_weights(net, mode='threshold', thresh=0., amount=0.):
 def prune_weights_ffg(net, mode='percentage', thresh=0., amount=0.):
     thresh_prune = lambda w, thresh: prune.global_unstructured(w, pruning_method=ThresholdPruning, threshold=thresh)
     L1_prune = lambda w, amount: prune.global_unstructured(w, pruning_method=L1UnstructuredFFG, amount=amount, W=w)
-    w_to_prune = ['W_mu', 'W_rho', 'bias_mu', 'bias_rho']
-    # w_to_prune = ['weight', 'bias']
+    # w_to_prune = ['W_mu', 'W_rho', 'bias_mu', 'bias_rho']
+    w_to_prune = ['weight', 'bias']
 
     for w in w_to_prune:
         _w_to_prune = [(m, w) for m in net.modules() if isinstance(m, (LinearRT, LinearLRT, Conv2dRT, Conv2dLRT))]
