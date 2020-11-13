@@ -94,12 +94,12 @@ class L1UnstructuredFFGOnTheFly(prune.BasePruningMethod):
         return np.stack(np.unravel_index(idx, array.shape)).T
 
 def prune_weights_ffg_on_the_fly(net, amount):
-    prune = lambda w, amount: prune.global_unstructured(w, pruning_method=L1UnstructuredFFGOnTheFly, amount=amount, W=w)
+    l1_prune = lambda w, amount: prune.global_unstructured(w, pruning_method=L1UnstructuredFFGOnTheFly, amount=amount, W=w)
     w_to_prune = ['weight', 'bias']
 
     for w in w_to_prune:
         _w_to_prune = [(m, w) for m in net.modules() if isinstance(m, (LinearRT, LinearLRT, Conv2dRT, Conv2dLRT))]
-        prune(_w_to_prune, amount)
+        l1_prune(_w_to_prune, amount)
 
 class L1UnstructuredFFG(prune.BasePruningMethod):
     PRUNING_TYPE = "unstructured"
