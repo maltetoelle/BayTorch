@@ -74,7 +74,7 @@ class L1UnstructuredFFGOnTheFly(prune.BasePruningMethod):
     PRUNING_TYPE = "unstructured"
 
     def __init__(self, W, amount):
-        super(L1UnstructuredFFG, self).__init__()
+        super(L1UnstructuredFFGOnTheFly, self).__init__()
         self.amount = amount
 
     def compute_mask(self, tensor, default_mask):
