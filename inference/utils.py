@@ -103,8 +103,23 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
         # self.mask = torch.cat(masks).to(mu.device)
 
     def compute_mask(self, tensor, default_mask):
-        print(self._tensor_name)
         return self.mask * default_mask
+
+    @classmethod
+    def apply(cls, module, name, amount):
+        r"""Adds the forward pre-hook that enables pruning on the fly and
+        the reparametrization of a tensor in terms of the original tensor
+        and the pruning mask.
+        Args:
+            module (nn.Module): module containing the tensor to prune
+            name (str): parameter name within ``module`` on which pruning
+                will act.
+            amount (int or float): quantity of parameters to prune.
+                If ``float``, should be between 0.0 and 1.0 and represent the
+                fraction of parameters to prune. If ``int``, it represents the
+                absolute number of parameters to prune.
+        """
+        return super(L1UnstructuredFFG, cls).apply(module, name, amount=amount)
 
     @staticmethod
     def smallest_N_indices(array, N):
