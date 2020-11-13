@@ -67,6 +67,7 @@ class ThresholdPruning(prune.BasePruningMethod):
         self.threshold = threshold
 
     def compute_mask(self, tensor, default_mask):
+        import pdb;pdb.set_trace()
         return torch.abs(tensor) > self.threshold
 
 class L1UnstructuredFFG(prune.BasePruningMethod):
