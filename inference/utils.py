@@ -75,21 +75,22 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
 
     def __init__(self, W, amount):
         super(L1UnstructuredFFG, self).__init__()
-        masks = []
-        snrs = np.array([])
-        for w in W:
-            if w[1][0] == 'W':
-                mu, rho = w[0].W_mu, w[0].W_rho
-            elif w[1][0] == 'b':
-                mu, rho = w[0].bias_mu, w[0].bias_rho
-            snr = torch.abs(mu) / softplus(rho)
-            snr_np = snr.detach().cpu().numpy().flatten()
-            snrs = np.hstack((snrs, np.log(snr_np)))
-
-        kth = int(amount * len(snrs))
-        idx = self.smallest_N_indices(snrs, kth)
-        self.mask = torch.ones(len(snrs)).to(mu.device)
-        self.mask[idx.flatten()] = 0.
+        self.amount = amount
+        # masks = []
+        # snrs = np.array([])
+        # for w in W:
+        #     if w[1][0] == 'W':
+        #         mu, rho = w[0].W_mu, w[0].W_rho
+        #     elif w[1][0] == 'b':
+        #         mu, rho = w[0].bias_mu, w[0].bias_rho
+        #     snr = torch.abs(mu) / softplus(rho)
+        #     snr_np = snr.detach().cpu().numpy().flatten()
+        #     snrs = np.hstack((snrs, np.log(snr_np)))
+        #
+        # kth = int(amount * len(snrs))
+        # idx = self.smallest_N_indices(snrs, kth)
+        # self.mask = torch.ones(len(snrs)).to(mu.device)
+        # self.mask[idx.flatten()] = 0.
 
         # self.mask = mask.type(torch.ByteTensor)
         #     kth = int(amount * np.array(snr_np.shape).prod())
@@ -103,21 +104,21 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
         # self.mask = torch.cat(masks).to(mu.device)
 
     def compute_mask(self, tensor, default_mask):
-        # import pdb;pdb.set_trace()
-        # mu = tensor[:int(0.5 * tensor.size()[0])].detach().cpu().numpy()
-        # rho = tensor[int(0.5 * tensor.size()[0]):].detach().cpu().numpy()
-        # snrs = np.abs(mu) / np.log(1 + np.exp(rho))
-        # # log_snrs = np.log(snrs)
-        #
-        # kth = int(self.amount * len(snrs))
-        # idx = self.smallest_N_indices(snrs, kth)
-        # mask = torch.ones(len(snrs)).to(mu.device)
-        # mask[idx.flatten()] = 0.
-        # # snr_np = snr.detach().cpu().numpy().flatten()
-        # # snrs = np.hstack((snrs, np.log(snr_np)))
-        # # return self.mask * default_mask
-        # return torch.hstack((mask, mask))
-        return self.mask
+        mu = tensor[:int(0.5 * tensor.size()[0])].detach().cpu().numpy()
+        rho = tensor[int(0.5 * tensor.size()[0]):].detach().cpu().numpy()
+        snrs = np.abs(mu) / np.log(1 + np.exp(rho))
+        # log_snrs = np.log(snrs)
+
+        kth = int(self.amount * len(snrs))
+        idx = self.smallest_N_indices(snrs, kth)
+        import pdb;pdb.set_trace()
+        mask = torch.ones(len(snrs)).to(mu.device)
+        mask[idx.flatten()] = 0.
+        # snr_np = snr.detach().cpu().numpy().flatten()
+        # snrs = np.hstack((snrs, np.log(snr_np)))
+        # return self.mask * default_mask
+        return torch.hstack((mask, mask))
+        # return self.mask
 
     # @classmethod
     # def apply(cls, module, name, amount):
