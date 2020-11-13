@@ -103,6 +103,7 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
         # self.mask = torch.cat(masks).to(mu.device)
 
     def compute_mask(self, tensor, default_mask):
+        import pdb;pdb.set_trace()
         return self.mask
 
     @staticmethod
