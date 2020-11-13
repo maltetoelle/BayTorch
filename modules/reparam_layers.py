@@ -25,15 +25,26 @@ class RTLayer(VIModule):
         self.kwargs = kwargs
 
     def forward(self, x, sample=True):
-        if self.training or sample:
-            weight = self.rsample(self.weight[0], softplus(self.weight[1]))
-            if self.bias is not None:
-                bias = self.rsample(self.bias[0], softplus(self.bias[1]))
+        if self._version == 'new':
+            if self.training or sample:
+                weight = self.rsample(self.weight[0], softplus(self.weight[1]))
+                if self.bias is not None:
+                    bias = self.rsample(self.bias[0], softplus(self.bias[1]))
+                else:
+                    bias = None
             else:
-                bias = None
+                weight = self.weight[0]
+                bias = self.bias[1]
         else:
-            weight = self.weight[0]
-            bias = self.bias[1]
+            if self.training or sample:
+                weight = self.rsample(self.W_mu, softplus(self.W_rho))
+                if self.bias_mu is not None:
+                    bias = self.rsample(self.bias_mu, softplus(self.bias_rho))
+                else:
+                    bias = None
+            else:
+                weight = self.W_mu
+                bias = self.bias_mu
 
         return self.layer_fn(x, weight, bias, **self.kwargs)
 
@@ -72,20 +83,37 @@ class LRTLayer(VIModule):
         self.kwargs = kwargs
 
     def forward(self, x, sample=True):
-        act_mu = self.layer_fn(x, self.weight[0], self.bias[0], **self.kwargs)
+        if self._version == 'new':
+            act_mu = self.layer_fn(x, self.weight[0], self.bias[0], **self.kwargs)
 
-        if self.training or sample:
-            w_sigma = softplus(self.weight[1])
+            if self.training or sample:
+                w_sigma = softplus(self.weight[1])
 
-            if self.bias is not None:
-                bias_var = softplus(self.bias[1]) ** 2
+                if self.bias is not None:
+                    bias_var = softplus(self.bias[1]) ** 2
+                else:
+                    bias_var = None
+
+                act_std = torch.sqrt(1e-16 + self.layer_fn(x**2, w_sigma**2, bias_var, **self.kwargs))
+                return self.rsample(act_mu, act_std)
             else:
-                bias_var = None
-
-            act_std = torch.sqrt(1e-16 + self.layer_fn(x**2, w_sigma**2, bias_var, **self.kwargs))
-            return self.rsample(act_mu, act_std)
+                return act_mu
+                
         else:
-            return act_mu
+            act_mu = self.layer_fn(x, self.W_mu, self.bias_mu, **self.kwargs)
+
+            if self.training or sample:
+                self.W_sigma = softplus(self.W_rho)
+
+                if self.bias_mu is not None:
+                    bias_var = softplus(self.bias_rho) ** 2
+                else:
+                    bias_var = None
+
+                act_std = torch.sqrt(1e-16 + self.layer_fn(x**2, self.W_sigma**2, bias_var, **self.kwargs))
+                return self.rsample(act_mu, act_std)
+            else:
+                return act_mu
 
     # def forward(self, x, sample=True):
     #     act_mu = self.layer_fn(x, self.W_mu, self.bias_mu, **self.kwargs)
