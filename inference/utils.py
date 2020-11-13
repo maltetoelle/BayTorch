@@ -75,6 +75,7 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
 
     def __init__(self, W, amount):
         super(L1UnstructuredFFG, self).__init__()
+        self.amount = amount
         # masks = []
         # snrs = np.array([])
         # for w in W:
@@ -103,9 +104,19 @@ class L1UnstructuredFFG(prune.BasePruningMethod):
         # self.mask = torch.cat(masks).to(mu.device)
 
     def compute_mask(self, tensor, default_mask):
-        print(tensor.size())
+        mu = tensor[:int(0.5 * torch.size())].detach().cpu().numpy()
+        rho = tensor[int(0.5 * torch.size()):].detach().cpu().numpy()
+        snrs = torch.abs(mu) / softplus(rho)
+        # log_snrs = np.log(snrs)
+
+        kth = int(self.amount * len(snrs))
+        idx = self.smallest_N_indices(snrs, kth)
+        mask = torch.ones(len(snrs)).to(mu.device)
+        mask[idx.flatten()] = 0.
+        # snr_np = snr.detach().cpu().numpy().flatten()
+        # snrs = np.hstack((snrs, np.log(snr_np)))
         # return self.mask * default_mask
-        return default_mask
+        return torch.hstack((mask, mask))
 
     # @classmethod
     # def apply(cls, module, name, amount):
