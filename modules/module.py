@@ -43,7 +43,7 @@ class VIModule(Module):
 
         self.weight = Parameter(torch.empty(2, *weight_size))
         if bias_size is not None:
-            self.bias = Parameter(torch.empty(2, *bias_size))
+            self.bias = Parameter(torch.empty(2, bias_size))
         else:
             self.register_parameter('bias', None)
 
