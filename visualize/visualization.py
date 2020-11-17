@@ -11,9 +11,10 @@ import seaborn as sns
 
 from .utils import get_params, get_params_mi
 
-def weight_hist(net, path=None):
+def weight_hist(net=None, params=None, path=None):
     sns.set()
-    params = get_params(net)
+    if params is None:
+        params = get_params(net)
     fig, ax = plt.subplots(1,1)
     ax.hist(params)
     ax.set_ylabel(r'count', fontsize=17)
@@ -23,9 +24,10 @@ def weight_hist(net, path=None):
         plt.savefig(path, bbox_inches='tight')
     return fig
 
-def log_weight_hist(net, path=None):
+def log_weight_hist(net=None, params=None, path=None):
     sns.set()
-    params = get_params(net)
+    if params is None:
+        params = get_params(net)
     log_params = np.log(np.abs(params))
     log_params[log_params < -1e10] = 0
     fig, ax = plt.subplots(1,1)
@@ -37,8 +39,9 @@ def log_weight_hist(net, path=None):
         plt.savefig(path, bbox_inches='tight')
     return fig
 
-def snr_hist(net, path=None):
-    mus, sigmas = get_params_mi(net)
+def snr_hist(net=None, mus=None, sigmas=None, path=None):
+    if net is not None:
+        mus, sigmas = get_params_mi(net)
     snr = (np.abs(mus) / sigmas)
     fig, ax = plt.subplots(1,1)
     ax.hist(snr)
@@ -49,8 +52,9 @@ def snr_hist(net, path=None):
         plt.savefig(path, bbox_inches='tight')
     return fig
 
-def log_snr_hist(net, path=None):
-    mus, sigmas = get_params_mi(net)
+def log_snr_hist(net=None, mus=None, sigmas=None, path=None):
+    if net is not None:
+        mus, sigmas = get_params_mi(net)
     log_snr = np.log(np.abs(mus) / sigmas)
     fig, ax = plt.subplots(1,1)
     ax.hist(log_snr)
