@@ -17,7 +17,7 @@ def weight_hist(net=None, params=None, path=None):
         params = get_params(net)
     fig, ax = plt.subplots(1,1)
     ax.hist(params, weights=np.ones(len(params)) / len(params))
-    ax.set_ylabel(r'p(\bm{\theta})', fontsize=22)
+    ax.set_ylabel(r'$p(\bm{\theta})$', fontsize=22)
     ax.set_xlabel(r'$\bm{\theta}$', fontsize=22)
     ax.tick_params(axis='both', which='major', labelsize=15)
     plt.tight_layout()
