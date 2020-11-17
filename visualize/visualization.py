@@ -17,8 +17,9 @@ def weight_hist(net=None, params=None, path=None):
         params = get_params(net)
     fig, ax = plt.subplots(1,1)
     ax.hist(params, weights=np.ones(len(params)) / len(params))
-    ax.set_ylabel(r'count', fontsize=17)
-    ax.set_xlabel(r'$\bm{\theta}$', fontsize=17)
+    ax.set_ylabel(r'count', fontsize=22)
+    ax.set_xlabel(r'$\bm{\theta}$', fontsize=22)
+    ax.tick_params(axis='both', which='major', labelsize=15)
     plt.tight_layout()
     if path is not None:
         plt.savefig(path, bbox_inches='tight')
@@ -32,8 +33,9 @@ def log_weight_hist(net=None, params=None, path=None):
     log_params[log_params < -1e10] = 0
     fig, ax = plt.subplots(1,1)
     ax.hist(log_params, weights=np.ones(len(log_params)) / len(log_params))
-    ax.set_ylabel(r'count', fontsize=17)
-    ax.set_xlabel(r'$\log|\bm{\theta}|$', fontsize=17)
+    ax.set_ylabel(r'count', fontsize=22)
+    ax.set_xlabel(r'$\log|\bm{\theta}|$', fontsize=22)
+    ax.tick_params(axis='both', which='major', labelsize=15)
     plt.tight_layout()
     if path is not None:
         plt.savefig(path, bbox_inches='tight')
@@ -45,8 +47,9 @@ def snr_hist(net=None, mus=None, sigmas=None, path=None):
     snr = (np.abs(mus) / sigmas)
     fig, ax = plt.subplots(1,1)
     ax.hist(snr, weights=np.ones(len(snr)) / len(snr))
-    ax.set_ylabel(r'count', fontsize=17)
-    ax.set_xlabel(r'SNR', fontsize=17)
+    ax.set_ylabel(r'count', fontsize=22)
+    ax.set_xlabel(r'SNR', fontsize=22)
+    ax.tick_params(axis='both', which='major', labelsize=15)
     plt.tight_layout()
     if path is not None:
         plt.savefig(path, bbox_inches='tight')
@@ -58,8 +61,9 @@ def log_snr_hist(net=None, mus=None, sigmas=None, path=None):
     log_snr = np.log(np.abs(mus) / sigmas)
     fig, ax = plt.subplots(1,1)
     ax.hist(log_snr, weights=np.ones(len(log_snr)) / len(log_snr))
-    ax.set_ylabel(r'count', fontsize=17)
-    ax.set_xlabel(r'$\log(\textrm{SNR})$', fontsize=17)
+    ax.set_ylabel(r'count', fontsize=22)
+    ax.set_xlabel(r'$\log(\textrm{SNR})$', fontsize=22)
+    ax.tick_params(axis='both', which='major', labelsize=15)
     plt.tight_layout()
     if path is not None:
         plt.savefig(path, bbox_inches='tight')
