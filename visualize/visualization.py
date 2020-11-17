@@ -11,7 +11,7 @@ import seaborn as sns
 
 from .utils import get_params, get_params_mi
 
-def weight_hist(net, path):
+def weight_hist(net, path=None):
     sns.set()
     params = get_params(net)
     fig, ax = plt.subplots(1,1)
@@ -19,9 +19,11 @@ def weight_hist(net, path):
     ax.set_ylabel(r'count', fontsize=17)
     ax.set_xlabel(r'$\bm{\theta}$', fontsize=17)
     plt.tight_layout()
-    plt.savefig(path)
+    if path is not None:
+        plt.savefig(path, bbox_inches='tight')
+    return fig
 
-def log_weight_hist(net, path):
+def log_weight_hist(net, path=None):
     sns.set()
     params = get_params(net)
     log_params = np.log(np.abs(params))
@@ -31,9 +33,11 @@ def log_weight_hist(net, path):
     ax.set_ylabel(r'count', fontsize=17)
     ax.set_xlabel(r'$\log|\bm{\theta}|$', fontsize=17)
     plt.tight_layout()
-    plt.savefig(path)
+    if path is not None:
+        plt.savefig(path, bbox_inches='tight')
+    return fig
 
-def snr_hist(net, path):
+def snr_hist(net, path=None):
     mus, sigmas = get_params_mi(net)
     snr = (np.abs(mus) / sigmas)
     fig, ax = plt.subplots(1,1)
@@ -41,9 +45,11 @@ def snr_hist(net, path):
     ax.set_ylabel(r'count', fontsize=17)
     ax.set_xlabel(r'SNR', fontsize=17)
     plt.tight_layout()
-    plt.savefig(path)
+    if path is not None:
+        plt.savefig(path, bbox_inches='tight')
+    return fig
 
-def log_snr_hist(net, path):
+def log_snr_hist(net, path=None):
     mus, sigmas = get_params_mi(net)
     log_snr = np.log(np.abs(mus) / sigmas)
     fig, ax = plt.subplots(1,1)
@@ -51,7 +57,9 @@ def log_snr_hist(net, path):
     ax.set_ylabel(r'count', fontsize=17)
     ax.set_xlabel(r'$\log(\textrm{SNR})$', fontsize=17)
     plt.tight_layout()
-    plt.savefig(path)
+    if path is not None:
+        plt.savefig(path, bbox_inches='tight')
+    return fig
 
 def plot_uncert(err, sigma, freq_in_bin=None, outlier_freq=0.0):
     if freq_in_bin is not None:
