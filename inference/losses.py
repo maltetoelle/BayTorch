@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 
-class NLLLoss2d(nn.Module):
+class NLLLoss(nn.Module):
 
     def __init__(self, reduction: str = 'mean'):
-        super(NLLLoss2d, self).__init__()
+        super(NLLLoss, self).__init__()
         self.reduction = reduction
 
     def forward(self, inputs: torch.Tensor,  target: torch.Tensor) -> torch.Tensor:
@@ -20,6 +20,12 @@ class NLLLoss2d(nn.Module):
             return loss.sum()
         else:
             return loss
+
+# needed for MA code
+class NLLLoss2d(NLLLoss):
+    def __init__(self, reduction: str = 'mean'):
+        super(NLLLoss2d, self).__init__(reduction=reduction)
+
 
 def uceloss(errors, uncert, n_bins=15, outlier=0.0, range=None):
     device = errors.device

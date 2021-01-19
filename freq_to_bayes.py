@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .modules import Conv2dRT, Conv2dLRT, LinearRT, LinearLRT, MCDropout
+from .modules import Conv2dRT, Conv2dLRT, Conv3dRT, Conv3dLRT, LinearRT, LinearLRT, MCDropout
 
 class MeanFieldVI(nn.Module):
 
@@ -19,9 +19,11 @@ class MeanFieldVI(nn.Module):
         self._version = _version
 
         if reparam == 'local':
+            self._conv3d = Conv3dLRT
             self._conv2d = Conv2dLRT
             self._linear = LinearLRT
         else:
+            self._conv3d = Conv3dRT
             self._conv2d = Conv2dRT
             self._linear = LinearRT
 
@@ -66,6 +68,21 @@ class MeanFieldVI(nn.Module):
                         kl_type=kl_type,
                         _version=self._version)
                     module._modules[key] = layer
+                elif isinstance(_module, nn.Conv3d):
+                    layer = self._conv3d(
+                        in_channels=_module.in_channels,
+                        out_channels=_module.out_channels,
+                        kernel_size=_module.kernel_size,
+                        bias=torch.is_tensor(_module.bias),
+                        stride=_module.stride,
+                        padding=_module.padding,
+                        dilation=_module.dilation,
+                        groups=_module.groups,
+                        prior=prior,
+                        posteriors=posteriors,
+                        kl_type=kl_type,
+                        _version=self._version)
+                    module._modules[key] = layer
 
 class MCDropoutVI(nn.Module):
 
@@ -93,7 +110,7 @@ class MCDropoutVI(nn.Module):
             if len(_module._modules):
                 self._replace_deterministic_modules(_module)
             else:
-                if isinstance(_module, (nn.Linear, nn.Conv2d)):
+                if isinstance(_module, (nn.Linear, nn.Conv2d, nn.Conv3d)):
                     module._modules[key] =  MCDropout(_module, self.dropout_type, self.dropout_p)
 
     def _make_last_layer_deterministic(self, module):
