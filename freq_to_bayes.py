@@ -10,6 +10,7 @@ class MeanFieldVI(nn.Module):
                  net,
                  prior=None,
                  posteriors=None,
+                 beta=1.,
                  kl_type='reverse',
                  reparam='local',
                  _version='old'):
@@ -28,7 +29,9 @@ class MeanFieldVI(nn.Module):
             self._linear = LinearRT
 
         self._replace_deterministic_modules(self.net, prior, posteriors, kl_type)
-        self.net.kl = self.kl
+
+        # self.net.kl = self.kl
+        self.beta = beta
 
     def forward(self, x):
         return self.net(x)
@@ -38,7 +41,7 @@ class MeanFieldVI(nn.Module):
         kl = 0
         for layer in self.modules():
             if hasattr(layer, '_kl'):
-                kl += layer._kl
+                kl += self.beta * layer._kl
         return kl
 
     def _replace_deterministic_modules(self, module, prior, posteriors, kl_type):

@@ -60,7 +60,7 @@ class Conv3dRT(RTLayer):
         self.kernel_size = _triple(kernel_size)
 
         weight_size = (out_channels, in_channels,
-                       self.kernel_size[0], self.kernel_size[1]. self.kernel_size[2])
+                       self.kernel_size[0], self.kernel_size[1], self.kernel_size[2])
 
         bias_size = (out_channels) if bias else None
 
@@ -133,7 +133,7 @@ class Conv3dLRT(LRTLayer):
         self.kernel_size = _triple(kernel_size)
 
         weight_size = (out_channels, in_channels,
-                       self.kernel_size[0], self.kernel_size[1]. self.kernel_size[2])
+                       self.kernel_size[0], self.kernel_size[1], self.kernel_size[2])
 
         bias_size = (out_channels) if bias else None
 
