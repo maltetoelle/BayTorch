@@ -14,7 +14,6 @@ class MixtureNormal():
 
         self.dists = [Normal(loc, scale) for loc, scale in zip(self.loc, self.scale)]
 
-
     def rsample(self):
         x = torch.rand(1)
         rsample = 0

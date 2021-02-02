@@ -18,7 +18,7 @@ def uncert_regression_gal(img_list: torch.Tensor, reduction: str = 'mean'):
     uncert = ale + epi
     if reduction == 'mean':
         return ale.mean().item(), epi.mean().item(), uncert.mean().item()
-    elif reduction == 'mean':
+    elif reduction == 'sum':
         return ale.sum().item(), epi.sum().item(), uncert.sum().item()
     else:
         return ale.detach(), epi.detach(), uncert.detach()

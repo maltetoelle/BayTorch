@@ -12,12 +12,10 @@ class MeanFieldVI(nn.Module):
                  posteriors=None,
                  beta=1.,
                  kl_type='reverse',
-                 reparam='local',
-                 _version='old'):
+                 reparam='local'):
 
         super(MeanFieldVI, self).__init__()
         self.net = net
-        self._version = _version
 
         if reparam == 'local':
             self._conv3d = Conv3dLRT
@@ -41,8 +39,8 @@ class MeanFieldVI(nn.Module):
         kl = 0
         for layer in self.modules():
             if hasattr(layer, '_kl'):
-                kl += self.beta * layer._kl
-        return kl
+                kl += layer._kl
+        return self.beta.to(kl.device) * kl
 
     def _replace_deterministic_modules(self, module, prior, posteriors, kl_type):
         for key, _module in module._modules.items():
@@ -53,8 +51,7 @@ class MeanFieldVI(nn.Module):
                     layer = self._linear(
                         _module.in_features,
                         _module.out_features,
-                        torch.is_tensor(_module.bias),
-                        _version=self._version)
+                        torch.is_tensor(_module.bias))
                     module._modules[key] = layer
                 elif isinstance(_module, nn.Conv2d):
                     layer = self._conv2d(
@@ -68,8 +65,7 @@ class MeanFieldVI(nn.Module):
                         groups=_module.groups,
                         prior=prior,
                         posteriors=posteriors,
-                        kl_type=kl_type,
-                        _version=self._version)
+                        kl_type=kl_type)
                     module._modules[key] = layer
                 elif isinstance(_module, nn.Conv3d):
                     layer = self._conv3d(
@@ -83,8 +79,7 @@ class MeanFieldVI(nn.Module):
                         groups=_module.groups,
                         prior=prior,
                         posteriors=posteriors,
-                        kl_type=kl_type,
-                        _version=self._version)
+                        kl_type=kl_type)
                     module._modules[key] = layer
 
 class MCDropoutVI(nn.Module):

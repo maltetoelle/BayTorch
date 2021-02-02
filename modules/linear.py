@@ -10,8 +10,7 @@ class LinearRT(RTLayer):
                  bias=True,
                  prior=None,
                  posteriors=None,
-                 kl_type='reverse',
-                 _version='old'):
+                 kl_type='reverse'):
 
         self.in_features = in_features
         self.out_featurs = out_features
@@ -25,8 +24,7 @@ class LinearRT(RTLayer):
                                         bias_size=bias_size,
                                         prior=prior,
                                         posteriors=posteriors,
-                                        kl_type=kl_type,
-                                        _version=_version)
+                                        kl_type=kl_type)
 
 class LinearLRT(LRTLayer):
 
@@ -36,8 +34,7 @@ class LinearLRT(LRTLayer):
                  bias=True,
                  prior=None,
                  posteriors=None,
-                 kl_type='reverse',
-                 _version='old'):
+                 kl_type='reverse'):
 
         self.in_features = in_features
         self.out_featurs = out_features
@@ -51,5 +48,4 @@ class LinearLRT(LRTLayer):
                                         bias_size=bias_size,
                                         prior=prior,
                                         posteriors=posteriors,
-                                        kl_type=kl_type,
-                                        _version=_version)
+                                        kl_type=kl_type)

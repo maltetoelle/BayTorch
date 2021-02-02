@@ -16,8 +16,7 @@ class Conv2dRT(RTLayer):
                  groups=1,
                  prior=None,
                  posteriors=None,
-                 kl_type='reverse',
-                 _version='old'):
+                 kl_type='reverse'):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -33,7 +32,6 @@ class Conv2dRT(RTLayer):
                                         prior=prior,
                                         posteriors=posteriors,
                                         kl_type=kl_type,
-                                        _version=_version,
                                         stride=stride,
                                         padding=padding,
                                         dilation=dilation,
@@ -52,8 +50,7 @@ class Conv3dRT(RTLayer):
                  groups=1,
                  prior=None,
                  posteriors=None,
-                 kl_type='reverse',
-                 _version='old'):
+                 kl_type='reverse'):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -70,7 +67,6 @@ class Conv3dRT(RTLayer):
                                         prior=prior,
                                         posteriors=posteriors,
                                         kl_type=kl_type,
-                                        _version=_version,
                                         stride=stride,
                                         padding=padding,
                                         dilation=dilation,
@@ -89,8 +85,7 @@ class Conv2dLRT(LRTLayer):
                  groups=1,
                  prior=None,
                  posteriors=None,
-                 kl_type='reverse',
-                 _version='old'):
+                 kl_type='reverse'):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -106,7 +101,6 @@ class Conv2dLRT(LRTLayer):
                                         prior=prior,
                                         posteriors=posteriors,
                                         kl_type=kl_type,
-                                        _version=_version,
                                         stride=stride,
                                         padding=padding,
                                         dilation=dilation,
@@ -125,8 +119,7 @@ class Conv3dLRT(LRTLayer):
                  groups=1,
                  prior=None,
                  posteriors=None,
-                 kl_type='reverse',
-                 _version='old'):
+                 kl_type='reverse'):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -143,7 +136,6 @@ class Conv3dLRT(LRTLayer):
                                         prior=prior,
                                         posteriors=posteriors,
                                         kl_type=kl_type,
-                                        _version=_version,
                                         stride=stride,
                                         padding=padding,
                                         dilation=dilation,
