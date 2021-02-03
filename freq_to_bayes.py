@@ -29,7 +29,7 @@ class MeanFieldVI(nn.Module):
         self._replace_deterministic_modules(self.net, prior, posteriors, kl_type)
 
         # self.net.kl = self.kl
-        self.beta = beta
+        self.beta = torch.tensor([beta])
 
     def forward(self, x):
         return self.net(x)
