@@ -1,12 +1,13 @@
 import torch
+from torch.nn import Module
 from torch.optim.optimizer import Optimizer, required
 import numpy as np
 
-def add_noise_sgld(model, lr):
-    for n in [x for x in model.parameters()]:
-        noise = torch.randn(n.size()) * np.sqrt(lr)
-        noise = noise.to(n.device)
-        n.data = n.data + noise
+def add_noise_sgld(model: Module, noise: float): # lr: float):
+    for param in [x for x in model.parameters()]:
+        n = torch.randn(param.size()) * noise # * np.sqrt(lr)
+        n = n.to(param.device)
+        param.data = param.data + n
 
 class SGLD(Optimizer):
     """
