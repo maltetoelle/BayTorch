@@ -4,8 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 matplotlib.rcParams['text.usetex'] = True
-matplotlib.rcParams['text.latex.preamble'] = [
-    r'\usepackage{bm}']
+matplotlib.rcParams['text.latex.preamble'] = r'\usepackage{bm}'
 
 import seaborn as sns
 

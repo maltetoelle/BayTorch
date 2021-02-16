@@ -31,10 +31,10 @@ class VIModule(Module):
 
         if 'pi' in list(prior.keys()):
             self._kl_divergence = mc_kl_divergence
-            self.prior = MixtureNormal(torch.tensor(prior['mu']), torch.tensor(prior["sigma"]), torch.tensor(prior['pi']))
+            self.prior = MixtureNormal(torch.tensor(prior['mu']), torch.tensor(prior["sigma"] + 1e-6), torch.tensor(prior['pi']))
         else:
             self._kl_divergence = kl_divergence
-            self.prior = Normal(torch.tensor(prior['mu']), torch.tensor(prior["sigma"]))
+            self.prior = Normal(torch.tensor(prior['mu']), torch.tensor(prior["sigma"] + 1e-6))
 
         self.kl_type = kl_type
 
